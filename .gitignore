@@ -1,36 +1,31 @@
-# Logs and runtime files
+# Ignore all generated STL files
+cases/geometries/
+
+# Ignore all generated OpenFOAM cases
+cases/cases_run/
+
+# Ignore logs and temporary files
 logs/
 *.log
-*.out
+*.tmp
+*.swp
 
-# Python cache
+# Ignore Python cache and compiled files
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# Virtual environments
-venv/
-.env/
+# Ignore OpenFOAM auto-generated files
+cases/cases_run/*/processor*/  
+cases/cases_run/*/log.*
+cases/cases_run/*/postProcessing/
+cases/cases_run/*/*.foam
 
-# OpenFOAM temporary files
-processor*/
-constant/polyMesh/
-system/
-openfoam.log
+# Allow only the OpenFOAM template folder
+!cases/template/
+!cases/template/**
 
-# Output data
-output/
-dataset/
-*.vtk
-*.pkl
 
-# IDE / Editor files
-.vscode/
-.idea/
-*.swp
-
-# OS-specific files
-.DS_Store
-Thumbs.db
-
+# Ignore Python package metadata
+*.egg-info/
