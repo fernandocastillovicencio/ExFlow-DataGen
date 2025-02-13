@@ -1,0 +1,36 @@
+# Logs and runtime files
+logs/
+*.log
+*.out
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.env/
+
+# OpenFOAM temporary files
+processor*/
+constant/polyMesh/
+system/
+openfoam.log
+
+# Output data
+output/
+dataset/
+*.vtk
+*.pkl
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.swp
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
