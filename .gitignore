@@ -29,3 +29,7 @@ cases/cases_run/*/*.foam
 
 # Ignore Python package metadata
 *.egg-info/
+
+
+# other files
+newchat.txt
