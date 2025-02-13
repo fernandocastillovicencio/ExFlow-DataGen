@@ -1,0 +1,188 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                |
+| \\      /  F ield         | cfMesh: A library for mesh generation          |
+|  \\    /   O peration     |                                                |
+|   \\  /    A nd           |                                                |
+|    \\/     M anipulation  |                                                |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version   2.0;
+    format    ascii;
+    class     dictionary;
+    location  "system";
+    object    meshDict;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Definir o único arquivo STL consolidado
+surfaceFile "geom.stl";
+
+// Unidade de escala (agora em milímetros)
+convertToMeters 1;
+
+// Definição dos limites do domínio (ajuste para milímetros)
+minX  0;   maxX 0.26;
+minY  0;   maxY 0.12;
+minZ -0.01; maxZ  0.01;  // Espessura mínima para simulação 2D
+
+size1 0.008;  // Ajustado para mm
+
+// Resolução da malha
+meshResolution 100;  // Ajuste conforme necessário para refinar a malha
+
+// Refinamento global
+maxCellSize #calc "$size1 * 0.5";
+boundaryCellSize $size1;
+
+// Controle da taxa de crescimento da malha
+growthRate 1.5;  // Limita o crescimento das células para evitar transições abruptas
+
+// Refinamento local baseado no nome das superfícies dentro do STL
+localRefinement
+{
+    obstacle
+    {
+        cellSize #calc "$size1 * 0.01";  // Refinamento extra no obstáculo
+    }
+}
+
+surfaceSmoothing
+{
+    nIterations 0;  // Desativa suavização da malha
+    featureAngle 180;  // Mantém bordas e cantos com ângulos acentuados
+}
+
+curvatureRefinement
+{
+    enabled no;  // Desativa refinamento baseado em curvatura para manter arestas afiadas
+}
+
+// Adicionar um box de refinamento em X: -40 a 100 mm, Y: -30 a 30 mm, e cobrindo todo Z
+objectRefinements
+{
+    refinementBox
+    {
+        type box;
+        cellSize #calc "$size1 *0.5";  // Ajuste para um refinamento adequado
+        centre (0.03 0 0);  // Centro do box (ajustado para mm)
+        lengthX 0.14;  // Extensão total na direção X (-0.04 a 0.1 → 0.1 - (-0.04) = 0.14)
+        lengthY 0.06;   // Extensão total na direção Y (-0.03 a 0.03 → 0.03 - (-0.03) = 0.06)
+        lengthZ 0.01;   // Cobre todo o domínio Z (ajuste conforme necessário)
+    }
+}
+
+// // Camadas de refinamento (boundary layers) ao redor de obstacle
+// boundaryLayers
+// {
+//     obstacle
+//     {
+//         nLayers 5;  // Número total de camadas limite
+//                     // Default: 3 (no cfMesh)
+//                     // Recomendado: 5-10 (para capturar bem a camada limite em RANS)
+        
+//         thicknessRatio 1.2;  // Razão de crescimento exponencial entre camadas
+//                              // Default: 1.2
+//                              // Recomendado: 1.1 - 1.3 (para evitar transição muito abrupta)
+
+//         firstLayerThickness 0.0001;  // Espessura da primeira célula da camada limite
+//                                      // Default: Não definido (precisa ser especificado)
+//                                      // Recomendado: 0.0001 m para RANS (y+ ≈ 30)
+//                                      // Se usar DNS, reduzir para ~1e-5 m (y+ ≈ 1)
+
+//         maxFirstLayerThickness 0.001;  // Tamanho máximo permitido para a primeira camada
+//                                        // Default: Não definido
+//                                        // Recomendado: 10x a primeira camada (~0.001 m)
+
+//         minThickness 1e-4;  // Espessura mínima para evitar que a camada seja removida
+//                             // Default: Não definido
+//                             // Recomendado: 1e-4 m (mantém estabilidade na geração da malha)
+
+//         adjustFirstLayerThickness no;  // Permite ao cfMesh ajustar a espessura da primeira camada automaticamente
+//                                        // Default: yes
+//                                        // Recomendado: no (para evitar que a camada seja colapsada)
+
+//         smoothingIterations 0;  // Número de iterações para suavizar a camada limite
+//                                 // Default: 3
+//                                 // Recomendado: 0 (evita que o cfMesh suavize excessivamente e colapse camadas)
+
+//         transitionRatio 2.0;  // Controle de transição entre a última camada limite e a malha base
+//                               // Default: 1.0
+//                               // Recomendado: 1.0 (mantém estabilidade na malha)
+//     }
+// }
+
+
+// Definição dos patches de contorno
+boundaryPatches
+{
+    inlet
+    {
+        type patch;
+        patchInfo
+        {
+            type patch;
+        }
+    }
+
+    outlet
+    {
+        type patch;
+        patchInfo
+        {
+            type patch;
+        }
+    }
+
+    upper
+    {
+        type patch;
+        patchInfo
+        {
+            type patch;
+        }
+    }
+
+    lower
+    {
+        type patch;
+        patchInfo
+        {
+            type patch;
+        }
+    }
+
+    obstacle
+    {
+        type wall;
+        patchInfo
+        {
+            type wall;
+        }
+    }
+
+    front
+    {
+        type empty;
+        patchInfo
+        {
+            type empty;
+        }
+    }
+
+    back
+    {
+        type empty;
+        patchInfo
+        {
+            type empty;
+        }
+    }
+}
+
+
+
+
+// ************************************************************************* //
