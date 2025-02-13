@@ -16,38 +16,42 @@ focusing on external aerodynamics. The project is structured to support multiple
 
 ```
 ExFlow-DataGen/
-│── docs/                  # Documentação do projeto
-│── examples/              # Casos de uso e configurações de exemplo
-│── exflow/                # Código principal da aplicação (módulo principal)
-│   │── __init__.py        # Indica que este é um módulo Python
-│   │── core/              # Regras de negócio e lógica principal
+│── docs/                  # Project documentation
+│── examples/              # Example cases and configuration files
+│── exflow/                # Main application module
+│   │── __init__.py        # Indicates this is a Python module
+│   │── core/              # Business logic and core processing
 │   │   │── __init__.py    
-│   │   │── case_generator.py  # Geração de casos para OpenFOAM
-│   │   │── solver.py          # Lógica de solução e automação OpenFOAM
-│   │── geometry/           # Módulo para definir geometrias
+│   │   │── case_generator.py  # OpenFOAM case generation
+│   │   │── solver.py          # OpenFOAM automation and solving
+│   │── geometry/           # Geometry definitions and handling
 │   │   │── __init__.py
-│   │   │── shapes.py          # Classe base para geometrias
-│   │   │── airfoil.py         # Implementação de aerofólio
-│   │   │── cylinder.py        # Implementação de cilindro
-│   │── io/                 # Entrada e saída de arquivos
+│   │   │── shapes.py          # Base class for geometries
+│   │   │── airfoil.py         # Airfoil implementation
+│   │   │── cylinder.py        # Cylinder implementation
+│   │── io/                 # File handling and data management
 │   │   │── __init__.py
-│   │   │── foam_io.py         # Leitura e escrita de arquivos OpenFOAM
-│   │   │── data_export.py     # Exportação dos dados gerados
-│   │── config/             # Configurações do software
-│   │   │── settings.py        # Configuração global do projeto
-│   │── utils/              # Utilitários auxiliares
+│   │   │── foam_io.py         # Read/write OpenFOAM files
+│   │   │── data_export.py     # Export generated data
+│   │── config/             # Software configuration
 │   │   │── __init__.py
-│   │   │── logger.py          # Sistema de logs
-│── tests/                 # Testes unitários e de integração
-│   │── test_geometry.py    # Testes para geometrias
-│   │── test_solver.py      # Testes para solver
-│   │── test_io.py          # Testes para manipulação de arquivos
-│── scripts/               # Scripts auxiliares
-│── setup.py               # Arquivo de instalação
-│── requirements.txt       # Dependências do projeto
-│── README.md              # Documentação inicial do projeto
-│── .gitignore             # Arquivos a serem ignorados pelo Git
-│── LICENSE                # Licença do projeto
+│   │   │── settings.py        # Global project settings
+│   │── utils/              # Auxiliary utilities
+│   │   │── __init__.py
+│   │   │── logger.py          # Logging system
+│── tests/                 # Unit and integration tests
+│   │── __init__.py
+│   │── test_geometry.py    # Tests for geometries
+│   │── test_solver.py      # Tests for solver
+│   │── test_io.py          # Tests for file handling
+│── scripts/               # Helper scripts
+│   │── __init__.py
+│   │── run_case.py         # Script to run a case
+│── setup.py               # Installation script
+│── requirements.txt       # Project dependencies
+│── README.md              # Project documentation
+│── .gitignore             # Git ignore rules
+│── LICENSE                # Project license
 
 ```
 
