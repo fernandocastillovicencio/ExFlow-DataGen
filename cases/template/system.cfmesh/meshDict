@@ -18,7 +18,7 @@ FoamFile
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 // Definir o único arquivo STL consolidado
-surfaceFile "geom.stl";
+surfaceFile "constant/triSurface/geom.stl";
 
 // Unidade de escala (agora em milímetros)
 convertToMeters 1;
@@ -31,7 +31,7 @@ minZ -0.01; maxZ  0.01;  // Espessura mínima para simulação 2D
 size1 0.008;  // Ajustado para mm
 
 // Resolução da malha
-meshResolution 100;  // Ajuste conforme necessário para refinar a malha
+meshResolution 50;  // Ajuste conforme necessário para refinar a malha
 
 // Refinamento global
 maxCellSize #calc "$size1 * 0.5";

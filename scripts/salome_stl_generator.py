@@ -31,6 +31,8 @@ domain_thickness = 10
 output_dir = "cases/geometries"
 os.makedirs(output_dir, exist_ok=True)
 
+O = geompy.MakeVertex(0, 0, 0)
+
 # Define number of obstacles
 N = 981
 
@@ -128,17 +130,32 @@ while generated_count < N:
     if base_wire:
         geompy.TranslateDXDYDZ(base_wire, 0, 0, -domain_thickness / 2)
 
+        # Adição das faces back/front corrigidas
+        face_obstacle_back = geompy.MakeFaceWires([base_wire], 1)
+        face_obstacle_front = geompy.MakeTranslation(face_obstacle_back, 0, 0, domain_thickness)
+
+        back = geompy.MakeCutList(back, [face_obstacle_back], True)
+        front = geompy.MakeCutList(front, [face_obstacle_front], True)
+
         obstacle = geompy.MakePrismVecH(base_wire, geompy.MakeVectorDXDYDZ(0, 0, 1), domain_thickness)
 
         folder_path = create_obstacle_folder(generated_count + 1)
 
-        geompy.ExportSTL(obstacle, generate_filename(folder_path, generated_count + 1, "obstacle"), True, 0.0001, False)
-        geompy.ExportSTL(inlet, generate_filename(folder_path, generated_count + 1, "inlet"), True, 0.0001, False)
-        geompy.ExportSTL(outlet, generate_filename(folder_path, generated_count + 1, "outlet"), True, 0.0001, False)
-        geompy.ExportSTL(upper, generate_filename(folder_path, generated_count + 1, "upper"), True, 0.0001, False)
-        geompy.ExportSTL(lower, generate_filename(folder_path, generated_count + 1, "lower"), True, 0.0001, False)
-        geompy.ExportSTL(front, generate_filename(folder_path, generated_count + 1, "front"), True, 0.0001, False)
-        geompy.ExportSTL(back, generate_filename(folder_path, generated_count + 1, "back"), True, 0.0001, False)
+        obstacle = geompy.MakeScaleTransform(obstacle, O, 0.001)
+        inlet = geompy.MakeScaleTransform(inlet, O , 0.001)
+        outlet = geompy.MakeScaleTransform(outlet, O , 0.001)
+        upper = geompy.MakeScaleTransform(upper, O , 0.001)
+        lower = geompy.MakeScaleTransform(lower, O , 0.001)
+        front = geompy.MakeScaleTransform(front, O , 0.001)
+        back = geompy.MakeScaleTransform(back, O , 0.001)
+
+        geompy.ExportSTL(obstacle, generate_filename(folder_path, generated_count + 1, "obstacle"), True, 0.001, False)
+        geompy.ExportSTL(inlet, generate_filename(folder_path, generated_count + 1, "inlet"), True, 0.001, False)
+        geompy.ExportSTL(outlet, generate_filename(folder_path, generated_count + 1, "outlet"), True, 0.001, False)
+        geompy.ExportSTL(upper, generate_filename(folder_path, generated_count + 1, "upper"), True, 0.001, False)
+        geompy.ExportSTL(lower, generate_filename(folder_path, generated_count + 1, "lower"), True, 0.001, False)
+        geompy.ExportSTL(front, generate_filename(folder_path, generated_count + 1, "front"), True, 0.001, False)
+        geompy.ExportSTL(back, generate_filename(folder_path, generated_count + 1, "back"), True, 0.001, False)
 
         generated_count += 1
         logger.info(f"Generated {generated_count}/{N} obstacles.")
