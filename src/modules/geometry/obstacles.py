@@ -12,14 +12,16 @@ The module ensures that the necessary directories for saving images and STL file
 """
 
 # Import functions to generate different geometric shapes
+# src/modules/geometry/obstacles.py
 from modules.geometry.ellipsoids import generate_ellipsoids
 from modules.geometry.semicircles import generate_semicircles
 from modules.geometry.triangles import generate_triangles
+from modules.geometry.quadrilaterals import generate_quadrilaterals
 
 
 def generate_obstacles():
     """
-    Generate and save ellipsoids, semicircles, and triangles.
+    Generate and save ellipsoids, semicircles, triangles, and quadrilaterals.
 
     This function orchestrates the generation of various geometric obstacle shapes,
     ensuring each shape is saved as both STL and PNG files in their respective directories.
@@ -32,6 +34,9 @@ def generate_obstacles():
 
     # Generate and save triangles: Triangles with different stretch factors and rotations
     generate_triangles()
+
+    # Generate and save quadrilaterals: Squares with horizontal stretching and rotation
+    generate_quadrilaterals()
 
 
 # Execute directly if needed
