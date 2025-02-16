@@ -1,8 +1,7 @@
 # src/modules/geometry/__init__.py
 """
-Geometry module containing obstacle generation and domain creation.
+Geometry module containing obstacle generation and transformations.
 """
 
-from .obstacles import generate_semicircle
-
-# from .domain import create_domain
+from .semicircle import generate_semicircle  # Fix import
+from .ellipsoid import generate_and_save_all_ellipsoids
