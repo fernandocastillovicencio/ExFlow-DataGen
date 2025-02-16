@@ -1,6 +1,20 @@
 # src/modules/geometry/transform_utils.py
 """
 Transformation utilities for shape deformation and rotation.
+
+This module provides functions to apply various transformations to geometric shapes,
+including stretching and rotating shapes. The functions are designed to handle both
+2D and 3D shapes.
+
+Functions:
+- stretch_one_side(vertices, deformation_factor, side): Applies horizontal deformation
+  to one half of the shape, either left or right.
+- stretch_both_sides(vertices, left_factor, right_factor): Applies different horizontal
+  deformations to the left and right halves of the shape.
+- rotate_shape(vertices, angle_degrees): Rotates a shape counterclockwise around (0,0)
+  by a given angle, handling both 2D and 3D shapes.
+- merge_shapes(vertices1, faces1): Merges two semicircles to create a full circle by
+  rotating the first semicircle by 180 degrees and combining the vertices and faces.
 """
 
 import numpy as np
@@ -18,21 +32,24 @@ def stretch_one_side(vertices, deformation_factor, side):
     Returns:
         np.ndarray: Deformed vertices.
     """
+    # Create a copy of the vertices to apply transformations
     deformed_vertices = vertices.copy()
 
-    # Select the correct side by creating a boolean mask
+    # Determine which side to deform based on the 'side' parameter
     if side == "left":
-        # Select left side (x < 0)
+        # Create a mask for the left side (x < 0)
         mask = deformed_vertices[:, 0] < 0
     elif side == "right":
-        # Select right side (x > 0)
+        # Create a mask for the right side (x > 0)
         mask = deformed_vertices[:, 0] > 0
     else:
+        # If the side is invalid, raise an error
         raise ValueError("Side must be 'left' or 'right'.")
 
-    # Apply scaling only on X-axis
+    # Apply the deformation factor to the selected side on the X-axis
     deformed_vertices[mask, 0] *= deformation_factor
 
+    # Return the deformed vertices
     return deformed_vertices
 
 
@@ -40,18 +57,22 @@ def stretch_both_sides(vertices, left_factor, right_factor):
     """
     Apply different horizontal deformations to the left and right halves.
 
+    This function takes the input vertices and applies different stretch or compression
+    factors to the left and right halves of the shape. The resulting vertices represent
+    the fully deformed shape.
+
     Parameters:
         vertices (np.ndarray): Shape vertices (N,3).
-        left_factor (float): Stretch/compression factor for left side.
-        right_factor (float): Stretch/compression factor for right side.
+        left_factor (float): Stretch/compression factor for left side (x < 0).
+        right_factor (float): Stretch/compression factor for right side (x > 0).
 
     Returns:
-        np.ndarray: Fully deformed vertices.
+        np.ndarray: Fully deformed vertices (N,3).
     """
-    # Deform the left side of the shape
+    # Deform the left side of the shape (x < 0)
     vertices_left = stretch_one_side(vertices, left_factor, "left")
 
-    # Deform the right side of the shape
+    # Deform the right side of the shape (x > 0)
     vertices_right = stretch_one_side(vertices_left, right_factor, "right")
 
     # Return the fully deformed vertices
@@ -62,30 +83,47 @@ def rotate_shape(vertices, angle_degrees):
     """
     Rotate a shape counterclockwise around (0,0) by a given angle.
 
+    This function handles both 2D and 3D vertices. The rotation is done in the XY plane
+    for 3D shapes, effectively rotating the shape around the Z-axis.
+
     Parameters:
-        vertices (np.ndarray): Shape vertices (N,3).
+        vertices (np.ndarray): Shape vertices (N, 2 or 3), with optional z=0 for 2D shapes.
         angle_degrees (float): Rotation angle in degrees.
 
     Returns:
-        np.ndarray: Rotated vertices.
+        np.ndarray: Rotated vertices (N, 2 or 3).
     """
     # Convert angle from degrees to radians
     angle_radians = np.radians(angle_degrees)
 
-    # Create the rotation matrix
-    rotation_matrix = np.array(
-        [
-            # cos, -sin, 0
-            [np.cos(angle_radians), -np.sin(angle_radians), 0],
-            # sin, cos, 0
-            [np.sin(angle_radians), np.cos(angle_radians), 0],
-            # 0, 0, 1
-            [0, 0, 1],
-        ]
-    )
+    # Check if the shape is 2D or 3D (check if z exists in the vertices)
+    if vertices.shape[1] == 2:  # 2D
+        # Rotation matrix for 2D rotation
+        rotation_matrix = np.array(
+            [
+                [np.cos(angle_radians), -np.sin(angle_radians)],
+                [np.sin(angle_radians), np.cos(angle_radians)],
+            ]
+        )
+        # Apply rotation to x and y, z remains unchanged (implicitly)
+        rotated_vertices = vertices @ rotation_matrix.T
+        return rotated_vertices
 
-    # Apply rotation to the vertices
-    return vertices @ rotation_matrix.T
+    elif vertices.shape[1] == 3:  # 3D
+        # Rotation matrix for 3D rotation in the XY plane
+        rotation_matrix = np.array(
+            [
+                [np.cos(angle_radians), -np.sin(angle_radians), 0],
+                [np.sin(angle_radians), np.cos(angle_radians), 0],
+                [0, 0, 1],
+            ]
+        )
+        # Apply rotation to x, y and z (rotation in the XY plane)
+        rotated_vertices = vertices @ rotation_matrix.T
+        return rotated_vertices
+
+    else:
+        raise ValueError("Vertices must have 2 or 3 columns (2D or 3D shapes).")
 
 
 def merge_shapes(vertices1, faces1):
@@ -103,14 +141,20 @@ def merge_shapes(vertices1, faces1):
     Returns:
         tuple: (vertices, faces) - Full merged shape.
     """
-    # Rotate first semicircle by 180 degrees to create the second semicircle
+    # Create a rotation matrix to rotate the first semicircle by 180 degrees.
+    # This is equivalent to flipping the x and y axes.
     rotation_matrix = np.array([[-1, 0, 0], [0, -1, 0], [0, 0, 1]])
-    vertices2 = vertices1 @ rotation_matrix.T  # Apply rotation
 
-    # Offset face indices for the second semicircle
+    # Apply the rotation matrix to the vertices of the first semicircle to create
+    # the second semicircle.
+    vertices2 = vertices1 @ rotation_matrix.T
+
+    # Offset the face indices of the second semicircle by the length of the first
+    # semicircle. This is because the faces of the second semicircle are computed
+    # relative to the vertices of the first semicircle.
     faces2 = (np.array(faces1) + len(vertices1)).tolist()
 
-    # Merge both halves
+    # Merge the vertices and faces of both semicircles to create the full circle.
     vertices = np.vstack((vertices1, vertices2))
     faces = faces1 + faces2
 

@@ -1,10 +1,22 @@
 # src/modules/geometry/ellipsoid.py
 """
-Generates an ellipsoid by applying different deformations and rotations.
+Generates ellipsoids by applying different deformations and rotations.
+
+This module provides functions to create ellipsoids by generating semicircles,
+mirroring them to form full circles, applying horizontal deformations, and rotating
+the shapes. The generated ellipsoids are saved as STL and PNG files.
+
+Functions:
+- create_ellipsoid(left_factor, right_factor, rotation_angle): Generates an ellipsoid
+  by deforming and rotating a circle.
+- generate_ellipsoids(): Generates and saves all possible ellipsoids with deformation
+  and rotation combinations.
+
+The module ensures that the necessary directories for saving images and STL files exist.
 """
 
 import numpy as np
-from modules.geometry.semicircle import create_semicircle
+from modules.geometry.semicircles import create_semicircle
 from modules.geometry.transform_utils import (
     stretch_both_sides,
     rotate_shape,

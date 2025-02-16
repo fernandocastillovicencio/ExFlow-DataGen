@@ -1,3 +1,17 @@
+"""
+Utility functions for saving geometric shapes as STL and PNG files.
+
+This module provides functions to compute the image size based on the STL bounding box,
+and to save geometric shapes as STL and PNG files. The module ensures that the necessary
+directories for saving images and STL files exist.
+
+Functions:
+- compute_image_size(vertices, target_height=320, margin_factor=0.05): Computes the image size
+  based on the STL bounding box.
+- save_as_stl(vertices, faces, filename): Saves the given vertices and faces as an STL file.
+- save_as_png(vertices, filename): Saves the given vertices as a black-and-white PNG image.
+"""
+
 import os
 import numpy as np
 import cv2
@@ -27,6 +41,15 @@ def compute_image_size(vertices, target_height=320, margin_factor=0.05):
 
     Returns:
         tuple: (image_width, image_height, pixels_per_meter, min_x, min_y)
+
+    Notes:
+        - The margin is added to the width and height of the STL shape.
+        - The image width and height are computed based on the target height and the width
+          and height of the STL shape with the added margin.
+        - The pixels per meter is computed as the target height divided by the height of
+          the STL shape with the added margin.
+        - The min_x and min_y values are the minimum x and y values of the STL shape with
+          the added margin.
     """
     # Compute the bounding box of the STL shape
     min_x, min_y = np.min(vertices[:, :2], axis=0)
@@ -74,15 +97,21 @@ def save_as_stl(vertices, faces, filename):
         - The file is saved in the predefined STL directory.
     """
     # Construct the full path for the STL file
+    # The filename parameter is used as the base name, and the STL
+    # extension is added automatically.
     stl_path = os.path.join(STL_DIR, f"{filename}.stl")
 
     # Create a 3D mesh object from the vertices and faces
+    # The trimesh library is used to create a mesh object from the
+    # given vertices and faces.
     shape_mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
 
     # Export the mesh to an STL file at the specified path
+    # The export method is used to save the mesh as an STL file.
     shape_mesh.export(stl_path)
 
     # Print confirmation of the saved file
+    # The saved file path is printed to the console.
     print(f"STL saved: {stl_path}")
 
 
@@ -101,6 +130,7 @@ def save_as_png(vertices, filename):
     Notes:
         - The file is saved in the predefined image directory.
     """
+    # Compute the image size
     image_width, image_height, pixels_per_meter, min_x, min_y = compute_image_size(
         vertices
     )
@@ -109,16 +139,24 @@ def save_as_png(vertices, filename):
     image = np.ones((image_height, image_width), dtype=np.uint8) * 255
 
     # Transform the vertices to pixel coordinates
+    # The x and y coordinates are computed by subtracting the minimum x and y values
+    # from the vertices, and then multiplying by the pixels per meter.
     pixel_x = ((vertices[:, 0] - min_x) * pixels_per_meter).astype(int)
     pixel_y = ((vertices[:, 1] - min_y) * pixels_per_meter).astype(int)
 
     # Create a list of points for the polygon
+    # The points are created by zipping together the x and y coordinates.
     points = np.array(list(zip(pixel_x, pixel_y)), dtype=np.int32)
 
     # Fill the polygon with black
+    # The fillPoly function is used to fill the polygon with black.
     cv2.fillPoly(image, [points], color=0)
 
     # Construct the full path for the PNG file
+    # The filename parameter is used as the base name, and the PNG extension is added
+    # automatically.
     image_path = os.path.join(IMAGE_DIR, f"{filename}.png")
+    # Save the image to the specified path
     cv2.imwrite(image_path, image)
+    # Print confirmation of the saved file
     print(f"Image saved: {image_path}")

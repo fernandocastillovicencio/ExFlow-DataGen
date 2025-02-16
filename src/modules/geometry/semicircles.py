@@ -1,3 +1,16 @@
+"""
+Generates semicircles by applying different deformations and rotations.
+
+This module provides functions to create semicircles, apply horizontal deformations,
+and rotate the shapes. The generated semicircles are saved as STL and PNG files.
+
+Functions:
+- create_semicircle(): Computes the vertices and faces of a semicircle.
+- generate_semicircles(): Generates and saves all semicircles with deformation and rotation combinations.
+
+The module ensures that the necessary directories for saving images and STL files exist.
+"""
+
 import numpy as np
 from modules.geometry.transform_utils import stretch_one_side, rotate_shape
 from modules.geometry.shape_utils import save_as_stl, save_as_png
@@ -7,13 +20,18 @@ def create_semicircle():
     """
     Compute the vertices and faces of a semicircle.
 
-    - Centered at (0,0)
-    - Radius = 1
-    - Curved edge through (0,1), (-1,0), (0,-1)
-    - Straight edge from (0,1) to (0,-1)
+    The semicircle is centered at (0,0), has a radius of 1, and its curved edge passes
+    through the points (0,1), (-1,0), and (0,-1). The straight edge of the semicircle
+    is from (0,1) to (0,-1).
 
     Returns:
         tuple: (vertices, faces)
+
+    Notes:
+        - The semicircle is centered at (0,0)
+        - The radius of the semicircle is 1
+        - The curved edge passes through the points (0,1), (-1,0), and (0,-1)
+        - The straight edge is from (0,1) to (0,-1)
     """
     radius_m = 1.0
     num_points = 50  # Number of points for smooth curvature
