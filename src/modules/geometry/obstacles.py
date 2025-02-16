@@ -1,21 +1,73 @@
-# src/modules/geometry/obstacles.py
+# src/modules/geometry/ellipsoid.py
 """
-Handles shape generation and saving for obstacles.
+Generates an ellipsoid by applying different deformations and rotations.
 """
 
-from modules.geometry.ellipsoid import generate_and_save_all_ellipsoids
-from modules.geometry.shape_utils import save_as_stl, save_as_png
+import numpy as np
 from modules.geometry.semicircle import generate_semicircle
-from modules.geometry.ellipsoid import generate_ellipsoid
+from modules.geometry.transform_utils import deform_ellipsoid, rotate_shape
+from modules.geometry.shape_utils import save_as_stl, save_as_png
+
+# Deformation factors for left and right halves
+DEFORMATION_FACTORS = [0.75, 1.0, 1.5, 2.5]
+# Rotation angles in degrees
+ROTATION_ANGLES = [0, 15, 30, 45, 60, 75]
 
 
-def generate_and_save_ellipsoids():
+def generate_ellipsoid(left_factor, right_factor, rotation_angle):
     """
-    Generate all ellipsoids with different deformations and save as STL/PNG.
+    Generate an ellipsoid by deforming and rotating a circle.
+
+    Parameters:
+        left_factor (float): Stretch/compression factor for left side.
+        right_factor (float): Stretch/compression factor for right side.
+        rotation_angle (float): Rotation angle in degrees.
+
+    Returns:
+        tuple: (vertices, faces) - Computed points and faces for the ellipsoid.
     """
-    generate_and_save_all_ellipsoids()
+    # Generate two semicircles
+    vertices1, faces1 = generate_semicircle()
+
+    # Rotate first semicircle by 180 degrees to create the second semicircle
+    rotation_matrix = np.array([[-1, 0, 0], [0, -1, 0], [0, 0, 1]])
+    vertices2 = vertices1 @ rotation_matrix.T  # Apply rotation
+
+    # Offset face indices for the second semicircle
+    faces2 = (np.array(faces1) + len(vertices1)).tolist()
+
+    # Merge both halves
+    vertices = np.vstack((vertices1, vertices2))
+    faces = faces1 + faces2
+
+    # Apply deformation
+    vertices = deform_ellipsoid(vertices, left_factor, right_factor)
+
+    # Apply rotation
+    vertices = rotate_shape(vertices, rotation_angle)
+
+    return vertices, faces
+
+
+def generate_and_save_all_ellipsoids():
+    """
+    Generate and save all possible ellipsoids with deformation and rotation combinations.
+    """
+    for left_factor in DEFORMATION_FACTORS:
+        for right_factor in DEFORMATION_FACTORS:
+            for rotation_angle in ROTATION_ANGLES:
+                filename = (
+                    f"ellipsoid_Ldef{int(left_factor * 100):03d}_"
+                    f"Rdef{int(right_factor * 100):03d}_"
+                    f"Rot{int(rotation_angle):03d}"
+                )
+                vertices, faces = generate_ellipsoid(
+                    left_factor, right_factor, rotation_angle
+                )
+                save_as_stl(vertices, faces, filename)
+                save_as_png(vertices, filename)
 
 
 # Execute directly if needed
 if __name__ == "__main__":
-    generate_and_save_ellipsoids()
+    generate_and_save_all_ellipsoids()
