@@ -1,21 +1,23 @@
-# src/modules/geometry/obstacles.py
-"""
-Handles shape generation and saving for obstacles.
-"""
-
 from modules.geometry.ellipsoid import generate_ellipsoids
+from modules.geometry.semicircle import generate_semicircles
 
 
-def generate_and_save_ellipsoids():
+def generate_obstacles():
     """
-    Generate and save all ellipsoids with different deformations as STL and PNG files.
+    Generate both ellipsoids and semicircles.
+    This function will be called when running the script as a whole.
 
-    This function is a convenience wrapper around generate_ellipsoids() to save all
-    generated ellipsoids to file.
+    The function is useful for generating all obstacle shapes in one go.
     """
+    # Generate and save ellipsoids
     generate_ellipsoids()
+
+    # Generate and save semicircles
+    generate_semicircles()
 
 
 # Execute directly if needed
 if __name__ == "__main__":
-    generate_ellipsoids()
+    # Uncomment one of the following lines based on what you want to test or generate
+    # To generate both ellipsoids and semicircles
+    generate_obstacles()

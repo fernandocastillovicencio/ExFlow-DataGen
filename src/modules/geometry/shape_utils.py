@@ -1,8 +1,3 @@
-# src/modules/geometry/shape_utils.py
-"""
-Utility functions for saving shapes as STL and PNG.
-"""
-
 import os
 import numpy as np
 import cv2
@@ -32,11 +27,6 @@ def compute_image_size(vertices, target_height=320, margin_factor=0.05):
 
     Returns:
         tuple: (image_width, image_height, pixels_per_meter, min_x, min_y)
-
-    Notes:
-        - The margin is added to both the width and the height of the STL bounding box.
-        - The image width and height are computed such that the STL shape fits within the
-          image with the specified margin.
     """
     # Compute the bounding box of the STL shape
     min_x, min_y = np.min(vertices[:, :2], axis=0)
@@ -94,8 +84,9 @@ def save_as_stl(vertices, faces, filename):
 
     # Print confirmation of the saved file
     print(f"STL saved: {stl_path}")
-    shape_mesh.export(stl_path)
-    print(f"STL saved: {stl_path}")
+
+
+def save_as_png(vertices, filename):
     """
     Save the given vertices as a black-and-white PNG image.
 
@@ -110,7 +101,6 @@ def save_as_stl(vertices, faces, filename):
     Notes:
         - The file is saved in the predefined image directory.
     """
-
     image_width, image_height, pixels_per_meter, min_x, min_y = compute_image_size(
         vertices
     )
