@@ -79,6 +79,28 @@ def stretch_both_sides(vertices, left_factor, right_factor):
     return vertices_right
 
 
+def shear_horizontal(vertices, shear_factor):
+    """
+    Apply horizontal shear transformation to the shape.
+
+    Parameters:
+        vertices (np.ndarray): Shape vertices (N,3).
+        shear_factor (float): Shear factor to control the magnitude of shearing.
+
+    Returns:
+        np.ndarray: Sheared vertices.
+    """
+    # Apply shear transformation
+    sheared_vertices = vertices.copy()
+
+    # Apply shear to each vertex
+    sheared_vertices[:, 0] += (
+        shear_factor * sheared_vertices[:, 1]
+    )  # shear factor applied to x
+
+    return sheared_vertices
+
+
 def rotate_shape(vertices, angle_degrees):
     """
     Rotate a shape counterclockwise around (0,0) by a given angle.
