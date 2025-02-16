@@ -13,6 +13,7 @@ Available shapes:
     - ellipsoid
     - semicircle
     - triangle
+    - quadrilateral
 
 The script prints a success message upon successful generation of the specified shape.
 """
@@ -53,6 +54,18 @@ except ImportError as e:
     # If the import fails, print a warning message with the error
     print(f"Warning: Could not import 'generate_and_save_triangles'. Error: {e}")
 
+
+try:
+    # Attempt to import the function to generate quadrilaterals
+    from modules.geometry.quadrilaterals import generate_quadrilaterals
+
+    # Add the quadrilaterals generation function to the dictionary
+    TEST_FUNCTIONS["quadrilateral"] = generate_quadrilaterals
+except ImportError as e:
+    # If the import fails, print a warning message with the error
+    print(f"Warning: Could not import 'generate_and_save_quadrilaterals'. Error: {e}")
+
+
 # Create an ArgumentParser to handle command-line arguments
 parser = argparse.ArgumentParser(description="Test individual geometry modules")
 
@@ -61,7 +74,7 @@ parser.add_argument(
     "--test",
     type=str,
     required=True,
-    help="Specify the shape to test (ellipsoid, semicircle, triangle, etc.)",
+    help="Specify the shape to test (ellipsoid, semicircle, triangle, quadrilateral, etc.)",
 )
 
 # Parse the command-line arguments
