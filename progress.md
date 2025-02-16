@@ -25,51 +25,54 @@ ExFlow-DataGen/
 ## ✅ Recent Progress
 
 📌 **1️⃣ Modularized Geometry Transformations**  
-- **Objetivo**: Movimentação de todas as transformações geométricas (deformação, rotação, união) para o arquivo `transform_utils.py`.  
-- **Resultado**:  
-  - A geração da geometria dos elipsóides em `ellipsoid.py` agora depende diretamente de funções importadas de `transform_utils.py`, tornando o código mais modular e fácil de manter.  
-  - Funções como `stretch_both_sides()`, `rotate_shape()`, e `merge_shapes()` são agora reutilizáveis e ficam isoladas de cálculos geométricos mais complexos, permitindo flexibilidade para adicionar novas formas geométricas no futuro.
+- **Goal**: Moved all geometric transformations (deformation, rotation, merging) to `transform_utils.py`.  
+- **Outcome**:  
+  - The ellipsoid geometry generation in `ellipsoid.py` now relies on functions imported from `transform_utils.py`, making the code more modular and easier to maintain.  
+  - Functions like `stretch_both_sides()`, `rotate_shape()`, and `merge_shapes()` are now reusable and isolated from more complex geometric calculations, allowing flexibility for future shape additions.
 
 📌 **2️⃣ Ensured Unique File Generation**  
-- **Objetivo**: Garantir que a geometria padrão do círculo (sem deformação ou rotação) seja gerada apenas uma vez, além de evitar duplicações nas geometrias geradas para diferentes deformações e rotações.  
-- **Resultado**:  
-  - A combinação `Ldef100_Rdef100_Rot000` (círculo não deformado) é agora gerada uma única vez.  
-  - Elipsóides e semicírculos são gerados com o nome correto, considerando os diferentes fatores de deformação e ângulos de rotação, evitando a criação de geometrias idênticas.
+- **Goal**: Ensure that the default circle geometry (`Ldef100`, `Rdef100`, `Rot000`) is only generated once and avoid duplications in geometries created for different deformations and rotations.  
+- **Outcome**:  
+  - The combination `Ldef100_Rdef100_Rot000` (undistorted circle) is now generated only once.  
+  - Ellipsoids and semicircles are correctly generated and named based on the deformation factors and rotation angles, avoiding the creation of identical geometries.
 
 📌 **3️⃣ Optimized Function Names for Clarity**  
-- **Objetivo**: Melhorar a clareza das funções e manter uma nomenclatura consistente entre os arquivos.  
-- **Resultado**:  
-  - Funções renomeadas para melhorar a legibilidade e a manutenção, incluindo:  
+- **Goal**: Improve the clarity of function names and maintain consistent naming conventions across files.  
+- **Outcome**:  
+  - Renamed functions to enhance readability and maintainability, including:  
     - `deform_half()`  
     - `deform_both_sides()`  
     - `rotate_shape()`  
     - `merge_shapes()`  
-  - Essas mudanças garantem que a transformação das formas geométricas seja feita de maneira modular e intuitiva.
+  - These changes ensure that geometric transformations are done in a modular and intuitive manner.
 
 📌 **4️⃣ Fixed Infinite Loop & Execution Issues**  
-- **Objetivo**: Corrigir problemas de loops infinitos e execução em `obstacles.py`.  
-- **Resultado**:  
-  - Remoção do loop recursivo que causava problemas ao tentar gerar obstáculos repetidamente.  
-  - Testes de execução agora são claros e não há execução redundante no código.  
-  - `test_modules.py` agora importa e testa corretamente os módulos de geração de elipsóides e semicírculos sem erros.
+- **Goal**: Fix issues with infinite loops and execution in `obstacles.py`.  
+- **Outcome**:  
+  - Removed the recursive loop that caused problems when trying to generate obstacles repeatedly.  
+  - Execution tests are now clear, and there are no redundant executions in the code.  
+  - `test_modules.py` now correctly imports and tests both the ellipsoids and semicircles modules without errors.
 
 📌 **5️⃣ Improved Shape Handling & Processing**  
-- **Objetivo**: Melhorar o manuseio e o processamento das formas geométricas, tornando o código mais flexível e modular.  
-- **Resultado**:  
-  - O arquivo `transform_utils.py` agora lida com todas as transformações geométricas, o que torna o código mais limpo e reutilizável.  
-  - O processamento de formas é agora mais organizado, permitindo uma fácil expansão para futuras geometrias sem duplicação de código.
+- **Goal**: Improve the handling and processing of geometric shapes to make the code more flexible and modular.  
+- **Outcome**:  
+  - `transform_utils.py` now handles all geometric transformations, making the code cleaner and reusable.  
+  - Shape processing is now more organized, allowing easy expansion for future shapes without duplicating code.
 
 ---
 
 ## ✅ Next Steps
 
 📌 **Verify correct shape outputs**  
-- Verificar se os arquivos gerados para as geometrias estão corretamente localizados nas pastas:  
+- Verify that the generated files for geometries are correctly located in the following directories:  
   - `geometries/obstacles/stl/`  
   - `geometries/obstacles/images/`  
-- Garantir que o nome e os parâmetros das geometrias geradas (STL e PNG) estão de acordo com o esperado, sem duplicação.
+- Ensure that the names and parameters of the generated geometries (STL and PNG) are as expected, with no duplication.
 
 📌 **Test full execution**  
-- Para rodar a execução completa de geração de obstáculos, utilize o comando:  
+- To run the full obstacle generation execution, use the following command:  
   ```bash
   PYTHONPATH=src python src/modules/geometry/obstacles.py
+
+📌 Confirm correctness of generated STL and PNG files
+Validate that the STL and PNG files generated are correct in terms of shape and representativity. This includes checking names and ensuring there are no duplicates.
