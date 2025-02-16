@@ -9,11 +9,11 @@ import argparse
 TEST_FUNCTIONS = {}
 
 try:
-    from modules.geometry.obstacles import generate_and_save_ellipsoids
+    from modules.geometry.ellipsoid import generate_and_save_all_ellipsoids
 
-    TEST_FUNCTIONS["ellipsoid"] = generate_and_save_ellipsoids
+    TEST_FUNCTIONS["ellipsoid"] = generate_and_save_all_ellipsoids
 except ImportError as e:
-    print(f"Warning: Could not import 'generate_and_save_ellipsoids'. Error: {e}")
+    print(f"Warning: Could not import 'generate_and_save_all_ellipsoids'. Error: {e}")
 
 parser = argparse.ArgumentParser(description="Test individual geometry modules")
 parser.add_argument(

@@ -48,3 +48,25 @@ def deform_ellipsoid(vertices, left_factor, right_factor):
         vertices_left, right_factor, "right"
     )  # Apply right after left
     return vertices_right
+
+
+def rotate_shape(vertices, angle_degrees):
+    """
+    Rotate a shape counterclockwise around (0,0) by a given angle.
+
+    Parameters:
+        vertices (np.ndarray): Shape vertices (N,3).
+        angle_degrees (float): Rotation angle in degrees.
+
+    Returns:
+        np.ndarray: Rotated vertices.
+    """
+    angle_radians = np.radians(angle_degrees)
+    rotation_matrix = np.array(
+        [
+            [np.cos(angle_radians), -np.sin(angle_radians), 0],
+            [np.sin(angle_radians), np.cos(angle_radians), 0],
+            [0, 0, 1],
+        ]
+    )
+    return vertices @ rotation_matrix.T  # Apply rotation
