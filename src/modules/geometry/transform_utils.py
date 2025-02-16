@@ -1,12 +1,12 @@
 # src/modules/geometry/transform_utils.py
 """
-Transformation utilities for shape deformation.
+Transformation utilities for shape deformation and rotation.
 """
 
 import numpy as np
 
 
-def deform_half(vertices, deformation_factor, side):
+def stretch_one_side(vertices, deformation_factor, side):
     """
     Apply horizontal deformation to one half of the shape.
 
@@ -20,18 +20,23 @@ def deform_half(vertices, deformation_factor, side):
     """
     deformed_vertices = vertices.copy()
 
+    # Select the correct side by creating a boolean mask
     if side == "left":
-        mask = deformed_vertices[:, 0] < 0  # Select left side (x < 0)
+        # Select left side (x < 0)
+        mask = deformed_vertices[:, 0] < 0
     elif side == "right":
-        mask = deformed_vertices[:, 0] > 0  # Select right side (x > 0)
+        # Select right side (x > 0)
+        mask = deformed_vertices[:, 0] > 0
     else:
         raise ValueError("Side must be 'left' or 'right'.")
 
-    deformed_vertices[mask, 0] *= deformation_factor  # Apply scaling only on X-axis
+    # Apply scaling only on X-axis
+    deformed_vertices[mask, 0] *= deformation_factor
+
     return deformed_vertices
 
 
-def deform_ellipsoid(vertices, left_factor, right_factor):
+def stretch_both_sides(vertices, left_factor, right_factor):
     """
     Apply different horizontal deformations to the left and right halves.
 
@@ -43,10 +48,13 @@ def deform_ellipsoid(vertices, left_factor, right_factor):
     Returns:
         np.ndarray: Fully deformed vertices.
     """
-    vertices_left = deform_half(vertices, left_factor, "left")
-    vertices_right = deform_half(
-        vertices_left, right_factor, "right"
-    )  # Apply right after left
+    # Deform the left side of the shape
+    vertices_left = stretch_one_side(vertices, left_factor, "left")
+
+    # Deform the right side of the shape
+    vertices_right = stretch_one_side(vertices_left, right_factor, "right")
+
+    # Return the fully deformed vertices
     return vertices_right
 
 
@@ -61,12 +69,49 @@ def rotate_shape(vertices, angle_degrees):
     Returns:
         np.ndarray: Rotated vertices.
     """
+    # Convert angle from degrees to radians
     angle_radians = np.radians(angle_degrees)
+
+    # Create the rotation matrix
     rotation_matrix = np.array(
         [
+            # cos, -sin, 0
             [np.cos(angle_radians), -np.sin(angle_radians), 0],
+            # sin, cos, 0
             [np.sin(angle_radians), np.cos(angle_radians), 0],
+            # 0, 0, 1
             [0, 0, 1],
         ]
     )
-    return vertices @ rotation_matrix.T  # Apply rotation
+
+    # Apply rotation to the vertices
+    return vertices @ rotation_matrix.T
+
+
+def merge_shapes(vertices1, faces1):
+    """
+    Merge two semicircles to create a full circle.
+
+    This function takes the vertices and faces of one semicircle, creates a second
+    semicircle by rotating the first one by 180 degrees, and then merges both to
+    create a full circle.
+
+    Parameters:
+        vertices1 (np.ndarray): Vertices of the first semicircle (N,3).
+        faces1 (list): Faces of the first semicircle.
+
+    Returns:
+        tuple: (vertices, faces) - Full merged shape.
+    """
+    # Rotate first semicircle by 180 degrees to create the second semicircle
+    rotation_matrix = np.array([[-1, 0, 0], [0, -1, 0], [0, 0, 1]])
+    vertices2 = vertices1 @ rotation_matrix.T  # Apply rotation
+
+    # Offset face indices for the second semicircle
+    faces2 = (np.array(faces1) + len(vertices1)).tolist()
+
+    # Merge both halves
+    vertices = np.vstack((vertices1, vertices2))
+    faces = faces1 + faces2
+
+    return vertices, faces
