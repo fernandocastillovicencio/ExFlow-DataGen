@@ -16,6 +16,8 @@ The module ensures that the necessary directories for saving images and STL file
 """
 
 import numpy as np
+import shapely.geometry as sg
+
 from modules.geometry.semicircles import create_semicircle
 from modules.geometry.transform_utils import (
     stretch_both_sides,
@@ -109,6 +111,35 @@ def generate_ellipsoids():
         save_as_stl(vertices, faces, filename)
         # Save the original circle as a PNG image
         save_as_png(vertices, filename)
+
+
+# ---------------------------------------------------------------------------- #
+# Função para gerar um semicírculo
+import numpy as np
+import shapely.geometry as sg
+
+
+def create_semicircle(center=(0, 0), radius=1, num_points=50):
+    """
+    Gera um semicírculo com base no eixo X e com centro especificado.
+    O semicírculo terá a base no eixo X e será voltado para cima.
+    """
+    # Gerar os pontos da curva do semicírculo (usando um arco do círculo)
+    points = [
+        (center[0] + radius * np.cos(theta), center[1] + radius * np.sin(theta))
+        for theta in np.linspace(np.pi / 2, -np.pi / 2, num_points)
+    ]
+
+    # Adicionar os pontos da base (linha reta)
+    points_base = [(x, center[1]) for x, y in points]
+
+    # Criar o polígono do semicírculo
+    semi_circle = sg.Polygon(points_base + points)
+
+    return semi_circle
+
+
+# ---------------------------------------------------------------------------- #
 
 
 # Execute directly if needed

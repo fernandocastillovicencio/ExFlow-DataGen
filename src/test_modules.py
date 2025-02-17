@@ -23,7 +23,7 @@ import argparse
 # Dictionary to store available shape test functions
 # This dictionary will be populated with functions to generate different shapes
 TEST_FUNCTIONS = {}
-
+# ---------------------------------------------------------------------------- #
 try:
     # Attempt to import the function to generate ellipsoids
     from modules.geometry.ellipsoids import generate_ellipsoids
@@ -33,7 +33,7 @@ try:
 except ImportError as e:
     # If the import fails, print a warning message with the error
     print(f"Warning: Could not import 'generate_and_save_all_ellipsoids'. Error: {e}")
-
+# ---------------------------------------------------------------------------- #
 try:
     # Attempt to import the function to generate semicircles
     from modules.geometry.semicircles import generate_semicircles
@@ -43,7 +43,7 @@ try:
 except ImportError as e:
     # If the import fails, print a warning message with the error
     print(f"Warning: Could not import 'generate_and_save_semicircles'. Error: {e}")
-
+# ---------------------------------------------------------------------------- #
 try:
     # Attempt to import the function to generate triangles
     from modules.geometry.triangles import generate_triangles
@@ -54,7 +54,7 @@ except ImportError as e:
     # If the import fails, print a warning message with the error
     print(f"Warning: Could not import 'generate_and_save_triangles'. Error: {e}")
 
-
+# ---------------------------------------------------------------------------- #
 try:
     # Attempt to import the function to generate quadrilaterals
     from modules.geometry.quadrilaterals import generate_quadrilaterals
@@ -65,6 +65,17 @@ except ImportError as e:
     # If the import fails, print a warning message with the error
     print(f"Warning: Could not import 'generate_and_save_quadrilaterals'. Error: {e}")
 
+# ---------------------------------------------------------------------------- #
+try:
+    # Attempt to import the function to generate combined_circle_triangle
+    from modules.geometry.combined_circ_tri import generate_combined_circle_triangle
+
+    # Add the quadrilaterals generation function to the dictionary
+    TEST_FUNCTIONS["combined_circ_tri"] = generate_combined_circle_triangle
+except ImportError as e:
+    # If the import fails, print a warning message with the error
+    print(f"Warning: Could not import 'generate_combined_circle_triangle'. Error: {e}")
+# ---------------------------------------------------------------------------- #
 
 # Create an ArgumentParser to handle command-line arguments
 parser = argparse.ArgumentParser(description="Test individual geometry modules")

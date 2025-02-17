@@ -38,6 +38,9 @@ def generate_obstacles():
     # Generate and save quadrilaterals: Squares with horizontal stretching and rotation
     generate_quadrilaterals()
 
+    # ---------------------------------------------------------------------------- #
+    generate_combined_circle_triangle()
+
 
 # Execute directly if needed
 if __name__ == "__main__":

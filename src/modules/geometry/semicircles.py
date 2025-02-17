@@ -12,7 +12,7 @@ The module ensures that the necessary directories for saving images and STL file
 """
 
 import numpy as np
-from modules.geometry.transform_utils import stretch_one_side, rotate_shape
+from modules.geometry.transform_utils import stretch_one_side
 from modules.geometry.shape_utils import save_as_stl, save_as_png
 
 

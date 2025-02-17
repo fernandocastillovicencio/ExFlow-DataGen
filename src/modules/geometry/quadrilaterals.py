@@ -21,7 +21,7 @@ from modules.geometry.transform_utils import (
 from modules.geometry.shape_utils import save_as_stl, save_as_png
 
 
-def create_square():
+def create_square_old():
     """
     Creates a square with side length of 1, centered at (0, 0).
 
@@ -130,3 +130,46 @@ def generate_quadrilaterals():
 
                         # Add this figure to the list of generated figures
                         generated_figures.append(vertices)
+
+
+# ---------------------------------------------------------------------------- #
+import shapely.geometry as sg
+import numpy as np
+
+
+def create_square(size=1, center=(0, 0), num_segments=10):
+    """
+    Cria um quadrado de qualquer tamanho e posição, com `num_segments` segmentos por aresta.
+
+    Parameters:
+    - size: Lado do quadrado. Padrão é 1.
+    - center: Posição central do quadrado (x, y). Padrão é (0, 0).
+    - num_segments: Número de segmentos em cada aresta. Padrão é 10.
+
+    Returns:
+    - sg.Polygon: O quadrado gerado pelo Shapely.
+    """
+    half_size = size / 2
+
+    # Definir os 4 vértices do quadrado
+    points = [
+        (center[0] - half_size, center[1] - half_size),  # Ponto inferior esquerdo
+        (center[0] + half_size, center[1] - half_size),  # Ponto inferior direito
+        (center[0] + half_size, center[1] + half_size),  # Ponto superior direito
+        (center[0] - half_size, center[1] + half_size),  # Ponto superior esquerdo
+    ]
+
+    # Gerar os segmentos para a malha (10 segmentos por aresta)
+    segments = []
+    for i in range(4):
+        x1, y1 = points[i]
+        x2, y2 = points[(i + 1) % 4]  # Liga com o próximo ponto
+        for j in range(num_segments + 1):
+            x = x1 + (x2 - x1) * j / num_segments
+            y = y1 + (y2 - y1) * j / num_segments
+            segments.append((x, y))
+
+    # Fechar o quadrado e criar o polígono
+    square = sg.Polygon(segments)
+
+    return square
