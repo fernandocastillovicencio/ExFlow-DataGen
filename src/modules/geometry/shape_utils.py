@@ -17,6 +17,7 @@ import numpy as np
 import cv2
 import trimesh
 
+
 # Define directories
 IMAGE_DIR = "geometries/obstacles/images"
 STL_DIR = "geometries/obstacles/stl"
