@@ -11,45 +11,43 @@ Functions:
 The module ensures that the necessary directories for saving images and STL files exist.
 """
 
-# src/modules/geometry/triangles.py
 import numpy as np
-from modules.geometry.transform_utils import rotate_shape, stretch_both_sides
-from modules.geometry.shape_utils import (
-    save_as_stl,
-    save_as_png,
-)  # Remova o check_redundancy aqui
+from modules.geometry.transform_utils import (
+    rotate_shape,
+    stretch_both_sides,
+)
+from modules.geometry.shape_utils import save_as_stl, save_as_png
 
 
 def create_triangle():
     """
-    Compute the vertices and faces of an equilateral triangle inscribed in a circle with radius 1m.
+    Compute the vertices and faces of an equilateral triangle with the base pointing downwards.
 
-    The side length of the triangle is 2.0 meters, and the triangle's base is aligned horizontally.
+    The side length of the triangle is set to 2.0, which ensures the height is 1 meter for a triangle with unit radius.
 
-    The triangle is centered at (0, 0), with the base (bottom edge) being horizontal.
+    The triangle is centered at (0,0) and its horizontal base points down.
 
     Returns:
         tuple: (vertices, faces)
     """
-    radius = 1.0  # Radius of the circle
+    # Side length of the equilateral triangle
+    side_length = 2.0  # side length to ensure the height is 1 meter
+    height = np.sqrt(3) / 2 * side_length  # Height of an equilateral triangle
 
-    # Vértice superior (no topo do círculo)
-    V1 = (0, radius, 0)  # Top vertex
-
-    # Vértices inferiores (calculados com base no ângulo de 120° entre eles)
-    V2 = (
-        np.cos(np.radians(120)) * radius,
-        np.sin(np.radians(120)) * radius,
-        0,
-    )  # Bottom-left vertex
-    V3 = (
-        np.cos(np.radians(240)) * radius,
-        np.sin(np.radians(240)) * radius,
-        0,
-    )  # Bottom-right vertex
+    # Define the three vertices of the triangle (with base pointing down)
+    # V1: Top vertex (now below the center)
+    # V2: Bottom-left vertex
+    # V3: Bottom-right vertex
+    V1 = (0, -height, 0)
+    V2 = (-side_length / 2, 0, 0)
+    V3 = (side_length / 2, 0, 0)
 
     vertices = np.array([V1, V2, V3])
-    faces = [[0, 1, 2]]  # Single face formed by the three vertices
+
+    # Define the face of the triangle
+    # The single face formed by the three vertices
+    faces = [[0, 1, 2]]
+
     return vertices, faces
 
 
@@ -60,36 +58,26 @@ def generate_triangles():
     This function generates triangles by applying different stretch factors (horizontal deformation) to the left and right halves,
     and then rotates each transformed triangle. Each transformed triangle is saved as both an STL and a PNG file.
 
+    The deformation factors determine how much the triangle is stretched or compressed, while the rotation angles determine
+    the rotation applied to the triangle.
+
     Transformation parameters:
     - Deformation factors: 0.75, 1.0, 1.5, 2.0
     - Rotation angles: 0, 15, 30, 45, 60, 90, 120, 135, 150 degrees
-    """
-    DEFORMATION_FACTORS = [
-        0.75,
-        1.0,
-        1.5,
-        2.0,
-    ]  # Deformation factors for each half of the triangle
-    ROTATION_ANGLES = [
-        0,
-        15,
-        30,
-        45,
-        60,
-        90,
-        120,
-        135,
-        150,
-    ]  # Rotation angles for the triangles
 
-    generated_figures = []  # List to store unique figures
+    Files are saved in predefined directories for STL and PNG files.
+    """
+    # Define the deformation factors for each half of the triangle
+    DEFORMATION_FACTORS = [0.75, 1.0, 1.5, 2.0]
+    # Define the rotation angles for the triangles
+    ROTATION_ANGLES = [0, 15, 30, 45, 60, 90, 120, 135, 150]
 
     # Iterate over each combination of deformation and rotation
     for left_factor in DEFORMATION_FACTORS:
         for right_factor in DEFORMATION_FACTORS:
             for rotation_angle in ROTATION_ANGLES:
                 # Construct the filename based on the applied transformations
-                filename = f"triangle_Ldef{int(left_factor * 100)}_Rdef{int(right_factor * 100)}_Rot{rotation_angle}"
+                filename = f"triangle_Ldef{int(left_factor * 100):03d}_Rdef{int(right_factor * 100):03d}_Rot{rotation_angle:03d}"
 
                 # Generate the base equilateral triangle
                 vertices, faces = create_triangle()
@@ -97,15 +85,13 @@ def generate_triangles():
                 # Apply deformation to both sides of the triangle
                 vertices = stretch_both_sides(vertices, left_factor, right_factor)
 
-                # Apply rotation
+                # Rotate the deformed triangle by the specified angle
                 vertices = rotate_shape(vertices, rotation_angle)
 
-                # Save the generated shape as both STL and PNG
+                # Save the transformed triangle as an STL file
                 save_as_stl(vertices, faces, filename)
+                # Save the transformed triangle as a PNG image
                 save_as_png(vertices, filename)
-
-                # Add this figure to the list of generated figures
-                generated_figures.append(vertices)
 
 
 # Execute directly if needed

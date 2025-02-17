@@ -85,8 +85,9 @@ def generate_quadrilaterals():
         0.75,
         1.0,
         1.5,
+        2.0,
     ]  # Deformation factors for both left and right sides
-    rotation_angles = [0, 15, 30, 45, 60, 75]  # Rotation angles
+    rotation_angles = [0, 15, 30, 45, 60]  # Rotation angles
     shape_types = [
         "square",
         "rhombus",
