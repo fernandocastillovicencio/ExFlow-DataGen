@@ -240,7 +240,7 @@ import numpy as np
 from shapely.geometry import Polygon
 
 
-def stretch_one_side(geometry, factor, side):
+def stretch_one_side(geometry, side, factor):
     """
     Alongar apenas um lado da geometria (esquerdo ou direito).
 

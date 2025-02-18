@@ -121,7 +121,7 @@ from shapely.geometry import Polygon
 import numpy as np
 
 
-def generate_semicircle(center=(0, 0), radius=1.0, opening_angle=180.0, num_points=50):
+def create_semicircle(center=(0, 0), radius=1.0, opening_angle=180.0, num_points=50):
     """
     Gera um semicírculo com base no centro, raio e ângulo de abertura.
 

@@ -1,38 +1,50 @@
 import numpy as np
 
-# Importando as funções necessárias
+# Importing necessary functions
 from modules.geometry.shape_utils import generate_mesh_from_polygon
 from modules.geometry.transform_utils import rotate_shape, stretch_one_side
-from modules.geometry.ellipsoids import generate_semicircle
+from modules.geometry.ellipsoids import create_semicircle
 from modules.geometry.triangles import generate_triangle
 
 
-# Função para gerar o triângulo equilátero
+# Function to generate the equilateral triangle
 # ---------------------------------------------------------------------------- #
-# Função para gerar o arquivo STL da combinação do semicírculo e triângulo
+# Function to generate the STL file of the combined semicircle and triangle
 def generate_combined_circle_triangle():
     """
-    Gera um semicírculo e um triângulo, os combina e gera um arquivo STL.
+    Generates a semicircle and a triangle, combines them, and generates an STL file.
+
+    The semicircle is generated with center at (0, 0), radius of 1.0, and opening angle of 180 degrees.
+    It is then rotated by 90 degrees and stretched horizontally to the left by 25%.
+
+    The triangle is generated with center at (0.0, sqrt(3)/2), side length of 2.0, and is rotated by -90 degrees.
+    It is then stretched horizontally to the right by 50%.
+
+    The geometries are combined and rotated by -30 degrees.
+    The generated STL file is saved as 'combined_circle_triangle.stl'.
     """
-    # Gerando o semicírculo
-    semicircle = generate_semicircle(center=(0, 0), radius=1.0, opening_angle=180)
-    # Rotacionando o semicírculo por 90 graus
+    # Generating the semicircle
+    semicircle = create_semicircle(center=(0, 0), radius=1.0, opening_angle=180)
+    # Rotating the semicircle by 90 degrees and stretching horizontally to the left by 25%
     semicircle = rotate_shape(semicircle, 90)
-    semicircle = stretch_one_side(semicircle, 1.25, "left")
+    semicircle = stretch_one_side(semicircle, "left", 1.25)
 
-    # Gerando o triângulo
+    # Generating the triangle
     triangle = generate_triangle(center=(0.0, np.sqrt(3) / 2), side_length=2.0)
+    # Rotating the triangle by -90 degrees and stretching horizontally to the right by 50%
     triangle = rotate_shape(triangle, -90)
-    triangle = stretch_one_side(triangle, 1.5, "right")
+    triangle = stretch_one_side(triangle, "right", 1.5)
 
-    # Combinando as geometrias (semicírculo + triângulo)
+    # Combining the geometries (semicircle + triangle)
     combined_geometry = semicircle.union(triangle)
+    # Rotating the combined geometry by -30 degrees
+    combined_geometry = rotate_shape(combined_geometry, -30)
 
-    # Gerando o mesh STL a partir da geometria combinada e salvando como 'combined_circle_triangle.stl'
+    # Generating the STL mesh from the combined geometry and saving as 'combined_circle_triangle.stl'
     generate_mesh_from_polygon(
         combined_geometry, stl_filename="combined_circle_triangle.stl"
     )
 
 
-# Chamada para gerar o STL
+# Call to generate the STL
 generate_combined_circle_triangle()
