@@ -16,8 +16,6 @@ The module ensures that the necessary directories for saving images and STL file
 """
 
 import numpy as np
-import shapely.geometry as sg
-
 from modules.geometry.semicircles import create_semicircle
 from modules.geometry.transform_utils import (
     stretch_both_sides,
@@ -113,35 +111,40 @@ def generate_ellipsoids():
         save_as_png(vertices, filename)
 
 
-# ---------------------------------------------------------------------------- #
-# Função para gerar um semicírculo
-import numpy as np
-import shapely.geometry as sg
-
-
-def create_semicircle(center=(0, 0), radius=1, num_points=50):
-    """
-    Gera um semicírculo com base no eixo X e com centro especificado.
-    O semicírculo terá a base no eixo X e será voltado para cima.
-    """
-    # Gerar os pontos da curva do semicírculo (usando um arco do círculo)
-    points = [
-        (center[0] + radius * np.cos(theta), center[1] + radius * np.sin(theta))
-        for theta in np.linspace(np.pi / 2, -np.pi / 2, num_points)
-    ]
-
-    # Adicionar os pontos da base (linha reta)
-    points_base = [(x, center[1]) for x, y in points]
-
-    # Criar o polígono do semicírculo
-    semi_circle = sg.Polygon(points_base + points)
-
-    return semi_circle
-
-
-# ---------------------------------------------------------------------------- #
-
-
 # Execute directly if needed
 if __name__ == "__main__":
     generate_ellipsoids()
+
+
+# ---------------------------------------------------------------------------- #
+from shapely.geometry import Polygon
+import numpy as np
+
+
+def generate_semicircle(center=(0, 0), radius=1.0, opening_angle=180.0, num_points=50):
+    """
+    Gera um semicírculo com base no centro, raio e ângulo de abertura.
+
+    Parameters:
+        center (tuple): Coordenadas (x, y) do centro do círculo (default: (0, 0)).
+        radius (float): O raio do círculo (default: 1.0).
+        opening_angle (float): O ângulo de abertura do semicírculo (default: 180 graus).
+        num_points (int): Número de pontos para gerar o contorno do semicírculo (default: 50).
+
+    Returns:
+        Polygon: A geometria do semicírculo como um objeto Shapely Polygon.
+    """
+    # Definindo os pontos do semicírculo
+    theta = np.linspace(
+        np.radians(90 - opening_angle / 2),
+        np.radians(90 + opening_angle / 2),
+        num_points,
+    )
+    points = [
+        (center[0] + radius * np.cos(t), center[1] + radius * np.sin(t)) for t in theta
+    ]
+
+    # Criando o polígono (semicírculo)
+    semicircle = Polygon(points)
+
+    return semicircle

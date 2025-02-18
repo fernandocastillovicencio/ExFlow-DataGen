@@ -20,7 +20,7 @@ Functions:
 import numpy as np
 
 
-def stretch_one_side(vertices, deformation_factor, side):
+def stretch_one_sides(vertices, deformation_factor, side):
     """
     Apply horizontal deformation to one half of the shape.
 
@@ -53,7 +53,7 @@ def stretch_one_side(vertices, deformation_factor, side):
     return deformed_vertices
 
 
-def stretch_both_sides(vertices, left_factor, right_factor):
+def stretch_both_sidess(vertices, left_factor, right_factor):
     """
     Apply different horizontal deformations to the left and right halves.
 
@@ -101,7 +101,7 @@ def shear_horizontal(vertices, shear_factor):
     return sheared_vertices
 
 
-def rotate_shape(vertices, angle_degrees):
+def rotate_shapes(vertices, angle_degrees):
     """
     Rotate a shape counterclockwise around (0,0) by a given angle.
 
@@ -181,3 +181,112 @@ def merge_shapes(vertices1, faces1):
     faces = faces1 + faces2
 
     return vertices, faces
+
+
+# ---------------------------------------------------------------------------- #
+
+import numpy as np
+from shapely.geometry import Polygon
+
+
+def rotate_shape(geometry, angle_deg, center=(0, 0)):
+    """
+    Gira a geometria (Polygon) pelo ângulo especificado.
+
+    Parameters:
+        geometry (Polygon): A geometria a ser rotacionada.
+        angle_deg (float): O ângulo de rotação em graus.
+        center (tuple): O ponto de rotação (default é (0, 0)).
+
+    Returns:
+        Polygon: A geometria rotacionada.
+    """
+    # Converte o ângulo de graus para radianos
+    angle_rad = np.radians(angle_deg)
+
+    # Matriz de rotação 2D
+    rotation_matrix = np.array(
+        [
+            [np.cos(angle_rad), -np.sin(angle_rad)],
+            [np.sin(angle_rad), np.cos(angle_rad)],
+        ]
+    )
+
+    # Função para rotacionar os vértices de um polígono
+    def rotate_vertices(vertices):
+        # Subtrai o centro da geometria para que a rotação seja em torno do centro
+        rotated = []
+        for x, y in vertices:
+            x_new, y_new = np.dot(
+                rotation_matrix, np.array([x - center[0], y - center[1]])
+            )
+            rotated.append(
+                (x_new + center[0], y_new + center[1])
+            )  # Revertendo a translação
+        return rotated
+
+    # Rotacionando a geometria
+    if isinstance(geometry, Polygon):
+        # Para Polygon, apenas rotacionamos os pontos do exterior
+        exterior_coords = rotate_vertices(list(geometry.exterior.coords))
+        return Polygon(exterior_coords)
+    else:
+        raise ValueError("A geometria deve ser um Polygon do Shapely.")
+
+
+# ---------------------------------------------------------------------------- #
+
+import numpy as np
+from shapely.geometry import Polygon
+
+
+def stretch_one_side(geometry, factor, side):
+    """
+    Alongar apenas um lado da geometria (esquerdo ou direito).
+
+    Parameters:
+        geometry (Polygon): A geometria a ser alongada.
+        factor (float): O fator de alongamento.
+        side (str): 'left' para alongar o lado esquerdo (x <= 0), 'right' para o lado direito (x >= 0).
+
+    Returns:
+        Polygon: A geometria com o lado especificado alongado.
+    """
+    if side not in ["left", "right"]:
+        raise ValueError("O argumento 'side' deve ser 'left' ou 'right'.")
+
+    # Obter os vértices da geometria
+    vertices = np.array([list(coord) + [0] for coord in geometry.exterior.coords])
+
+    # Alongar a metade especificada
+    if side == "left":
+        # Alongar os vértices com x <= 0
+        vertices[vertices[:, 0] <= 0, 0] *= factor
+    else:
+        # Alongar os vértices com x >= 0
+        vertices[vertices[:, 0] >= 0, 0] *= factor
+
+    # Retornar a geometria com os vértices alterados
+    return Polygon(vertices[:, :2])
+
+
+def stretch_both_sides(geometry, factor):
+    """
+    Alongar ambos os lados da geometria (x <= 0 e x >= 0) com o mesmo fator.
+
+    Parameters:
+        geometry (Polygon): A geometria a ser alongada.
+        factor (float): O fator de alongamento para ambos os lados.
+
+    Returns:
+        Polygon: A geometria com ambos os lados alongados.
+    """
+    # Obter os vértices da geometria
+    vertices = np.array([list(coord) + [0] for coord in geometry.exterior.coords])
+
+    # Alongar ambos os lados (esquerdo e direito)
+    vertices[vertices[:, 0] <= 0, 0] *= factor
+    vertices[vertices[:, 0] >= 0, 0] *= factor
+
+    # Retornar a geometria com os vértices alterados
+    return Polygon(vertices[:, :2])

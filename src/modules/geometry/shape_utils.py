@@ -213,3 +213,35 @@ def create_mesh_from_shape(geometry, num_edges=10):
     mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
 
     return mesh
+
+
+# ---------------------------------------------------------------------------- #
+
+from shapely.geometry import Polygon
+from stl import mesh
+
+
+def generate_mesh_from_polygon(geometry, stl_filename="output.stl"):
+    """
+    Gera um mesh STL a partir de uma geometria do Shapely (Polygon).
+
+    Parameters:
+        geometry (Polygon): A geometria do Shapely a ser convertida para um mesh.
+        stl_filename (str): Nome do arquivo STL de saída (default: "output.stl").
+    """
+    if not isinstance(geometry, Polygon):
+        raise ValueError("A geometria deve ser um Polygon do Shapely.")
+
+    # Extraindo os vértices e adicionando z=0 para cada coordenada
+    vertices = np.array([list(coord) + [0] for coord in geometry.exterior.coords])
+
+    # Gerando faces (triângulos simples)
+    faces = [[0, i, i + 1] for i in range(1, len(vertices) - 1)]
+
+    # Criando e salvando o mesh STL
+    mesh_data = mesh.Mesh(np.zeros(len(faces), dtype=mesh.Mesh.dtype))
+    for i, f in enumerate(faces):
+        mesh_data.vectors[i] = vertices[f]
+
+    mesh_data.save(stl_filename)
+    print(f"STL saved: {stl_filename}")

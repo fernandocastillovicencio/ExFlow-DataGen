@@ -94,6 +94,41 @@ def generate_triangles():
                 save_as_png(vertices, filename)
 
 
+# ---------------------------------------------------------------------------- #
+
+from shapely.geometry import Polygon
+import numpy as np
+
+
+def generate_triangle(center=(0, 0), side_length=2.0):
+    """
+    Gera um triângulo equilátero com base no centro e no tamanho da aresta.
+
+    Parameters:
+        center (tuple): Coordenadas (x, y) do centro do triângulo (default: (0, 0)).
+        side_length (float): O tamanho da aresta do triângulo (default: 1.0).
+
+    Returns:
+        Polygon: A geometria do triângulo como um objeto Shapely Polygon.
+    """
+    # Calculando a altura do triângulo equilátero
+    height = np.sqrt(3) / 2 * side_length  # Altura de um triângulo equilátero
+
+    # Definindo os três vértices do triângulo
+    V1 = (center[0], center[1] + height / 2)  # Top vertex
+    V2 = (center[0] - side_length / 2, center[1] - height / 2)  # Bottom-left vertex
+    V3 = (center[0] + side_length / 2, center[1] - height / 2)  # Bottom-right vertex
+
+    # Criando o triângulo com base nesses vértices
+    triangle_points = [V1, V2, V3]
+    triangle = Polygon(triangle_points)
+
+    return triangle
+
+
+# ---------------------------------------------------------------------------- #
+
+
 # Execute directly if needed
 if __name__ == "__main__":
     generate_triangles()

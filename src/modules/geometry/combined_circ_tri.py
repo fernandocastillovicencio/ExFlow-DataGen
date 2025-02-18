@@ -1,50 +1,37 @@
-import os
+import numpy as np
 
-from modules.geometry.ellipsoids import create_semicircle
-from modules.geometry.quadrilaterals import create_square
-from modules.geometry.shape_utils import create_mesh_from_shape
-
-# Define directories
-IMAGE_DIR = "geometries/obstacles/images"
-STL_DIR = "geometries/obstacles/stl"
+from modules.geometry.shape_utils import generate_mesh_from_polygon
+from modules.geometry.transform_utils import rotate_shape, stretch_one_side
+from modules.geometry.ellipsoids import generate_semicircle
+from modules.geometry.triangles import generate_triangle
 
 
-def generate_semicircle():
-    # Gerar o semicírculo
-    semicircle = create_semicircle(radius=1, num_points=50)
-
-    # Criar a malha para o semicírculo
-    mesh = create_mesh_from_shape(semicircle)
-
-    # Salvar a malha como um arquivo STL
-    filename = f"semicircle"
-
-    stl_path = os.path.join(STL_DIR, f"{filename}.stl")
-    mesh.export(stl_path)
-
-    print(f"Arquivo STL salvo como '{filename}'.")
-
-
+# Função para gerar o triângulo equilátero
 # ---------------------------------------------------------------------------- #
-
-
-def generate_square():
-    print("Generating square of size 1 centered at (0, 0)")
-
-    # Gerar o quadrado com tamanho 1 centrado em (0, 0)
-    square = create_square(size=1, center=(0, 0))
-
-    # Criar a malha para o quadrado
-    mesh = create_mesh_from_shape(square)
-
-    # Salvar a malha como um arquivo STL
-    filename = "geometries/obstacles/stl/square.stl"
-    mesh.export(filename)
-    print(f"Arquivo STL salvo como '{filename}'.")
-
-
-# ---------------------------------------------------------------------------- #
+# Função para gerar o arquivo STL da combinação do semicírculo e triângulo
 def generate_combined_circle_triangle():
-    print("Generating combined circle triangle")
-    generate_semicircle()
-    generate_square()
+    """
+    Gera um semicírculo e um triângulo, os combina e gera um arquivo STL.
+    """
+    # Gerando o semicírculo
+    semicircle = generate_semicircle(center=(0, 0), radius=1.0, opening_angle=180)
+    # Rotacionando o semicírculo por 30 graus
+    semicircle = rotate_shape(semicircle, 90)
+    semicircle = stretch_one_side(semicircle, 2.0, "left")
+
+    # Gerando o triângulo
+    triangle = generate_triangle(center=(0.0, np.sqrt(3) / 2), side_length=2.0)
+    triangle = rotate_shape(triangle, -90)
+    triangle = stretch_one_side(triangle, 1.5, "right")
+
+    # Combinando as geometrias (semicírculo + triângulo)
+    combined_geometry = semicircle.union(triangle)
+
+    # Gerando o mesh STL a partir da geometria combinada
+    generate_mesh_from_polygon(
+        combined_geometry, stl_filename="combined_circle_triangle.stl"
+    )
+
+
+# Chamada para gerar o STL
+generate_combined_circle_triangle()
