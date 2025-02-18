@@ -231,3 +231,31 @@ def stretch_both_sides(geometry, factor):
 
     # Retornar a geometria com os vértices alterados
     return Polygon(vertices[:, :2])
+
+
+from shapely.geometry import Polygon
+
+
+def translate_shape(shape, dx=0.0, dy=0.0):
+    """
+    Translada uma geometria 2D no plano XY, garantindo que a geometria seja um Polygon válido.
+
+    Parameters:
+        shape (Polygon): A geometria (Polygon) a ser transladada.
+        dx (float): Deslocamento ao longo do eixo X.
+        dy (float): Deslocamento ao longo do eixo Y.
+
+    Returns:
+        Polygon: A geometria transladada (Polygon).
+    """
+    # if not isinstance(shape, Polygon):
+    #     raise ValueError("A geometria deve ser um Polygon do Shapely.")
+
+    # Obtém as coordenadas do exterior do polígono
+    coords = list(shape.exterior.coords)
+
+    # Aplica a translação nos pontos
+    translated_coords = [(x + dx, y + dy) for x, y in coords]
+
+    # Cria um novo Polygon com os pontos transladados
+    return Polygon(translated_coords)
