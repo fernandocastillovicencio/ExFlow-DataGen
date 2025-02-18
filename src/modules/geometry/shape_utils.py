@@ -169,16 +169,48 @@ def save_as_png(vertices, filename):
 
 # ---------------------------------------------------------------------------- #
 
-
-from shapely.geometry import Polygon
 import numpy as np
-from stl import mesh
+from shapely.geometry import Polygon
 from scipy.spatial import Delaunay
+from modules.geometry.shape_utils import save_as_stl
+from stl import mesh
+
+
+def normalize_vertices(vertices):
+    """
+    Normaliza os vértices para que a geometria fique centralizada em (0,0) e redimensionada
+    para um intervalo fixo.
+
+    Parameters:
+        vertices (np.ndarray): Os vértices da geometria.
+
+    Returns:
+        np.ndarray: Os vértices normalizados.
+    """
+    # Centralizando os vértices no ponto (0,0) considerando apenas x e y
+    centroid = np.median(vertices[:, :2], axis=0)  # Apenas x e y
+    vertices_normalized = vertices[:, :2] - centroid  # Subtrai o centro apenas de x e y
+
+    # Encontrando os limites da geometria (apenas para x e y)
+    min_x, min_y = np.min(vertices_normalized, axis=0)
+    max_x, max_y = np.max(vertices_normalized, axis=0)
+
+    # Calculando a escala para que a geometria caiba entre -1 e 1
+    scale_x = 2 / (max_x - min_x)
+    scale_y = 2 / (max_y - min_y)
+
+    # Normalizando os vértices (apenas x e y)
+    vertices_normalized = (vertices_normalized - [min_x, min_y]) * [scale_x, scale_y]
+
+    # Restaurando a dimensão z sem alteração
+    vertices[:, :2] = vertices_normalized  # Atualizando x e y
+    return vertices
 
 
 def generate_mesh_from_polygon(geometry, stl_filename="output.stl"):
     """
     Gera um mesh STL a partir de uma geometria do Shapely (Polygon) usando Triangulação de Delaunay.
+    Antes da triangulação, a geometria é normalizada.
 
     Parameters:
         geometry (Polygon): A geometria do Shapely a ser convertida para um mesh.
@@ -190,11 +222,13 @@ def generate_mesh_from_polygon(geometry, stl_filename="output.stl"):
     # Extraindo os vértices da geometria e adicionando z=0 para cada coordenada (convertendo para 3D)
     vertices = np.array([list(coord) + [0] for coord in geometry.exterior.coords])
 
-    # Garantir que as arestas sejam conectadas (não há pontos duplicados)
-    faces = []
+    # Normalizar os vértices
+    vertices_normalized = normalize_vertices(vertices)
 
     # Usando Delaunay para triangulação da geometria
-    delaunay = Delaunay(vertices[:, :2])  # Delaunay trabalha apenas no plano 2D
+    delaunay = Delaunay(
+        vertices_normalized[:, :2]
+    )  # Delaunay trabalha apenas no plano 2D
 
     # Gerar as faces a partir da triangulação de Delaunay
     faces = delaunay.simplices
@@ -202,7 +236,7 @@ def generate_mesh_from_polygon(geometry, stl_filename="output.stl"):
     # Criando o mesh STL a partir das faces geradas pela triangulação de Delaunay
     mesh_data = mesh.Mesh(np.zeros(faces.shape[0], dtype=mesh.Mesh.dtype))
     for i, f in enumerate(faces):
-        mesh_data.vectors[i] = vertices[f]
+        mesh_data.vectors[i] = vertices_normalized[f]
 
     # Salvando o arquivo STL
     mesh_data.save(stl_filename)
