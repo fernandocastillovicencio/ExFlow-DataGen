@@ -20,65 +20,6 @@ Functions:
 import numpy as np
 
 
-def stretch_one_sides(vertices, deformation_factor, side):
-    """
-    Apply horizontal deformation to one half of the shape.
-
-    Parameters:
-        vertices (np.ndarray): Shape vertices (N,3).
-        deformation_factor (float): Stretch/compression factor.
-        side (str): "left" or "right" to apply deformation correctly.
-
-    Returns:
-        np.ndarray: Deformed vertices.
-    """
-    # Create a copy of the vertices to apply transformations
-    deformed_vertices = vertices.copy()
-
-    # Determine which side to deform based on the 'side' parameter
-    if side == "left":
-        # Create a mask for the left side (x < 0)
-        mask = deformed_vertices[:, 0] < 0
-    elif side == "right":
-        # Create a mask for the right side (x > 0)
-        mask = deformed_vertices[:, 0] > 0
-    else:
-        # If the side is invalid, raise an error
-        raise ValueError("Side must be 'left' or 'right'.")
-
-    # Apply the deformation factor to the selected side on the X-axis
-    deformed_vertices[mask, 0] *= deformation_factor
-
-    # Return the deformed vertices
-    return deformed_vertices
-
-
-def stretch_both_sidess(vertices, left_factor, right_factor):
-    """
-    Apply different horizontal deformations to the left and right halves.
-
-    This function takes the input vertices and applies different stretch or compression
-    factors to the left and right halves of the shape. The resulting vertices represent
-    the fully deformed shape.
-
-    Parameters:
-        vertices (np.ndarray): Shape vertices (N,3).
-        left_factor (float): Stretch/compression factor for left side (x < 0).
-        right_factor (float): Stretch/compression factor for right side (x > 0).
-
-    Returns:
-        np.ndarray: Fully deformed vertices (N,3).
-    """
-    # Deform the left side of the shape (x < 0)
-    vertices_left = stretch_one_side(vertices, left_factor, "left")
-
-    # Deform the right side of the shape (x > 0)
-    vertices_right = stretch_one_side(vertices_left, right_factor, "right")
-
-    # Return the fully deformed vertices
-    return vertices_right
-
-
 def shear_horizontal(vertices, shear_factor):
     """
     Apply horizontal shear transformation to the shape.

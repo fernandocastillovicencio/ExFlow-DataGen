@@ -167,54 +167,6 @@ def save_as_png(vertices, filename):
 # ---------------------------------------------------------------------------- #
 
 
-def create_mesh_from_shape(geometry, num_edges=10):
-    """
-    Cria uma malha 3D a partir de uma figura 2D do Shapely e retorna a malha do Trimesh.
-    A malha gerada estará no plano XY (com Z=0), com cada forma dividida em `num_edges` arestas.
-
-    Parameters:
-    - geometry: A figura 2D do Shapely para a qual queremos criar a malha.
-    - num_edges: O número de segmentos desejados para a borda da forma. Padrão é 10.
-
-    Returns:
-    - trimesh.Trimesh: A malha 3D gerada.
-    """
-    # Se a geometria for um quadrado, use a função modificada
-    if (
-        isinstance(geometry, sg.Polygon)
-        and geometry.is_valid
-        and len(list(geometry.exterior.coords)) == 5
-    ):  # quadrado fechado com 4 vértices
-        # Garantir que seja tratado com 10 segmentos
-        triangles = so.triangulate(geometry)
-    else:
-        # Para formas gerais, aplicamos a triangulação padrão
-        triangles = so.triangulate(geometry)
-
-    vertices_list = []
-    faces_list = []
-
-    # Para cada triângulo gerado pela triangulação
-    for triangle in triangles:
-        coords = list(triangle.exterior.coords)[
-            :-1
-        ]  # Remove o ponto duplicado no final
-        idx = len(vertices_list)  # Índice base para os vértices desse triângulo
-        vertices_list.extend(
-            [(x, y, 0) for x, y in coords]
-        )  # Adiciona os vértices com z=0
-        faces_list.append([idx, idx + 1, idx + 2])  # Adiciona a face como triângulo
-
-    # Converter listas para arrays numpy
-    vertices = np.array(vertices_list)
-    faces = np.array(faces_list)
-
-    # Criar a malha Trimesh
-    mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
-
-    return mesh
-
-
 # ---------------------------------------------------------------------------- #
 
 

@@ -23,47 +23,7 @@ import argparse
 # Dictionary to store available shape test functions
 # This dictionary will be populated with functions to generate different shapes
 TEST_FUNCTIONS = {}
-# ---------------------------------------------------------------------------- #
-try:
-    # Attempt to import the function to generate ellipsoids
-    from modules.geometry.ellipsoids import generate_ellipsoids
 
-    # Add the ellipsoid generation function to the dictionary
-    TEST_FUNCTIONS["ellipsoid"] = generate_ellipsoids
-except ImportError as e:
-    # If the import fails, print a warning message with the error
-    print(f"Warning: Could not import 'generate_and_save_all_ellipsoids'. Error: {e}")
-# ---------------------------------------------------------------------------- #
-try:
-    # Attempt to import the function to generate semicircles
-    from modules.geometry.semicircles import generate_semicircles
-
-    # Add the semicircle generation function to the dictionary
-    TEST_FUNCTIONS["semicircle"] = generate_semicircles
-except ImportError as e:
-    # If the import fails, print a warning message with the error
-    print(f"Warning: Could not import 'generate_and_save_semicircles'. Error: {e}")
-# ---------------------------------------------------------------------------- #
-try:
-    # Attempt to import the function to generate triangles
-    from modules.geometry.triangles import generate_triangles
-
-    # Add the triangles generation function to the dictionary
-    TEST_FUNCTIONS["triangle"] = generate_triangles
-except ImportError as e:
-    # If the import fails, print a warning message with the error
-    print(f"Warning: Could not import 'generate_and_save_triangles'. Error: {e}")
-
-# ---------------------------------------------------------------------------- #
-try:
-    # Attempt to import the function to generate quadrilaterals
-    from modules.geometry.quadrilaterals import generate_quadrilaterals
-
-    # Add the quadrilaterals generation function to the dictionary
-    TEST_FUNCTIONS["quadrilateral"] = generate_quadrilaterals
-except ImportError as e:
-    # If the import fails, print a warning message with the error
-    print(f"Warning: Could not import 'generate_and_save_quadrilaterals'. Error: {e}")
 
 # ---------------------------------------------------------------------------- #
 try:
