@@ -7,22 +7,6 @@ from modules.geometry.ellipsoids import create_semicircle
 from modules.geometry.triangles import generate_triangle
 
 
-def generate_semicircle():
-    semicircle = create_semicircle(center=(0, 0), radius=1.0, opening_angle=180)
-    # Rotating the semicircle by 90 degrees and stretching horizontally to the left by 25%
-    semicircle = rotate_shape(semicircle, 90)
-    return semicircle
-
-
-def generate_triangle():
-    # Generating the triangle
-    triangle = generate_triangle(center=(0.0, np.sqrt(3) / 2), side_length=2.0)
-    # Rotating the triangle by -90 degrees and stretching horizontally to the right by 50%
-    triangle = rotate_shape(triangle, -90)
-
-    return triangle
-
-
 # Function to generate the equilateral triangle
 # ---------------------------------------------------------------------------- #
 # Function to generate the STL file of the combined semicircle and triangle
@@ -39,15 +23,16 @@ def generate_combined_circle_triangle():
     The geometries are combined and rotated by -30 degrees.
     The generated STL file is saved as 'combined_circle_triangle.stl'.
     """
-    # ---------------------------------------------------------------------------- #
-    semicircle = generate_semicircle()
-
+    # Generating the semicircle
+    semicircle = create_semicircle(center=(0, 0), radius=1.0, opening_angle=180)
+    # Rotating the semicircle by 90 degrees and stretching horizontally to the left by 25%
+    semicircle = rotate_shape(semicircle, 90)
     semicircle = stretch_one_side(semicircle, "left", 1.25)
 
-    # ---------------------------------------------------------------------------- #
-    triangle = generate_triangle()
-
-    # operations
+    # Generating the triangle
+    triangle = generate_triangle(center=(0.0, np.sqrt(3) / 2), side_length=2.0)
+    # Rotating the triangle by -90 degrees and stretching horizontally to the right by 50%
+    triangle = rotate_shape(triangle, -90)
     triangle = stretch_one_side(triangle, "right", 1.5)
 
     # Combining the geometries (semicircle + triangle)
