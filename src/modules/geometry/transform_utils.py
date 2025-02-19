@@ -23,118 +23,98 @@ import numpy as np
 from shapely.geometry import Polygon
 
 
+# -------------------------------------------------------- #
+#                     STRETCH ONE SIDE                     #
+# -------------------------------------------------------- #
 def stretch_one_side(geometry, side, factor):
     """
-    Alongar apenas um lado da geometria (esquerdo ou direito).
+    Stretches one half of the geometry with the specified factor.
 
     Parameters:
-        geometry (Polygon): A geometria a ser alongada.
-        factor (float): O fator de alongamento.
-        side (str): 'left' para alongar o lado esquerdo (x <= 0), 'right' para o lado direito (x >= 0).
+        geometry (Polygon): The geometry to be stretched.
+        side (str): The side to be stretched, can be 'left' or 'right'.
+        factor (float): The stretching factor to be applied.
 
     Returns:
-        Polygon: A geometria com o lado especificado alongado.
+        Polygon: The geometry with the specified half stretched.
+
+    Raises:
+        ValueError: If the 'side' argument is not 'left' or 'right'.
     """
     if side not in ["left", "right"]:
-        raise ValueError("O argumento 'side' deve ser 'left' ou 'right'.")
+        raise ValueError("The 'side' argument must be 'left' or 'right'.")
 
-    # Obter os vértices da geometria
+    # Get the vertices of the geometry
     vertices = np.array([list(coord) + [0] for coord in geometry.exterior.coords])
 
-    # Alongar a metade especificada
+    # Stretch the specified half
     if side == "left":
-        # Alongar os vértices com x <= 0
+        # Stretch vertices with x <= 0
         vertices[vertices[:, 0] <= 0, 0] *= factor
     else:
-        # Alongar os vértices com x >= 0
+        # Stretch vertices with x >= 0
         vertices[vertices[:, 0] >= 0, 0] *= factor
 
-    # Retornar a geometria com os vértices alterados
+    # Return the geometry with the altered vertices
     return Polygon(vertices[:, :2])
-
-
-def stretch_both_sides(geometry, factor):
-    """
-    Alongar ambos os lados da geometria (x <= 0 e x >= 0) com o mesmo fator.
-
-    Parameters:
-        geometry (Polygon): A geometria a ser alongada.
-        factor (float): O fator de alongamento para ambos os lados.
-
-    Returns:
-        Polygon: A geometria com ambos os lados alongados.
-    """
-    # Obter os vértices da geometria
-    vertices = np.array([list(coord) + [0] for coord in geometry.exterior.coords])
-
-    # Alongar ambos os lados (esquerdo e direito)
-    vertices[vertices[:, 0] <= 0, 0] *= factor
-    vertices[vertices[:, 0] >= 0, 0] *= factor
-
-    # Retornar a geometria com os vértices alterados
-    return Polygon(vertices[:, :2])
-
-
-from shapely.geometry import Polygon
-
-
-def translate_shape(shape, dx=0.0, dy=0.0):
-    """
-    Translada uma geometria 2D no plano XY, garantindo que a geometria seja um Polygon válido.
-
-    Parameters:
-        shape (Polygon): A geometria (Polygon) a ser transladada.
-        dx (float): Deslocamento ao longo do eixo X.
-        dy (float): Deslocamento ao longo do eixo Y.
-
-    Returns:
-        Polygon: A geometria transladada (Polygon).
-    """
-    # if not isinstance(shape, Polygon):
-    #     raise ValueError("A geometria deve ser um Polygon do Shapely.")
-
-    # Obtém as coordenadas do exterior do polígono
-    coords = list(shape.exterior.coords)
-
-    # Aplica a translação nos pontos
-    translated_coords = [(x + dx, y + dy) for x, y in coords]
-
-    # Cria um novo Polygon com os pontos transladados
-    return Polygon(translated_coords)
 
 
 # -------------------------------------------------------- #
-
-import numpy as np
-
-
-def rotate_shape(geometry, angle_degrees):
+#                    STRETCH BOTH SIDES                    #
+# -------------------------------------------------------- #
+def stretch_both_sides(geometry, factor):
     """
-    Rotaciona uma geometria 2D (Polygon do Shapely ou array de vértices) a partir de um ângulo dado.
-    A rotação é feita no plano XY para 2D.
+    Stretches both sides (left and right) of the geometry with the specified factor.
 
     Parameters:
-        geometry (Polygon or np.ndarray): Geometria do Shapely ou array de vértices (N,2).
-        angle_degrees (float): O ângulo de rotação em graus.
+        geometry (Polygon): The geometry to be stretched.
+        factor (float): The stretching factor to be applied.
 
     Returns:
-        Polygon: Geometria rotacionada (caso seja Shapely).
-        np.ndarray: Vértices rotacionados (caso seja array NumPy).
+        Polygon: The geometry with the altered vertices.
     """
-    # Se for um objeto Shapely, extrai os vértices e converte para array NumPy
+    # Get the vertices of the geometry
+    vertices = np.array([list(coord) + [0] for coord in geometry.exterior.coords])
+
+    # Stretch both sides (left and right)
+    # The condition vertices[:, 0] <= 0 selects vertices with x <= 0 (left side)
+    # and the condition vertices[:, 0] >= 0 selects vertices with x >= 0 (right side)
+    vertices[vertices[:, 0] <= 0, 0] *= factor
+    vertices[vertices[:, 0] >= 0, 0] *= factor
+
+    # Return the geometry with the altered vertices
+    return Polygon(vertices[:, :2])
+
+
+# -------------------------------------------------------- #
+#                         ROTATION                         #
+# -------------------------------------------------------- #
+def rotate_shape(geometry, angle_degrees):
+    """
+    Rotates a 2D geometry around its centroid.
+
+    Parameters:
+        geometry (Polygon or array-like): The geometry (Shapely Polygon or NumPy array)
+            to be rotated.
+        angle_degrees (float): The rotation angle in degrees.
+
+    Returns:
+        Polygon or array-like: The rotated geometry (Shapely Polygon or NumPy array).
+    """
+    # If it is a Shapely object, extract the vertices and convert to NumPy array
     if isinstance(geometry, Polygon):
         vertices = np.array(geometry.exterior.coords)
     else:
         vertices = np.array(geometry)
 
-    # Garantir que há pelo menos uma dimensão válida para multiplicação
+    # Ensure there is at least one valid dimension for multiplication
     if vertices.ndim == 1:
         vertices = vertices.reshape(1, -1)
 
-    # Converter o ângulo de graus para radianos
+    # Convert the angle from degrees to radians
     angle_radians = np.radians(angle_degrees)
 
-    # Matriz de rotação 2D (para a rotação no plano XY)
+    # 2D rotation matrix (for rotation in the XY plane)
     rotation_matrix = np.array(
         [
             [np.cos(angle_radians), -np.sin(angle_radians)],
@@ -142,10 +122,10 @@ def rotate_shape(geometry, angle_degrees):
         ]
     )
 
-    # Aplicando a rotação
-    rotated_vertices = vertices[:, :2] @ rotation_matrix.T  # Multiplicação matricial
+    # Applying the rotation
+    rotated_vertices = vertices[:, :2] @ rotation_matrix.T  # Matrix multiplication
 
-    # Se a entrada era um Polygon, retorna um Polygon rotacionado
+    # If the input was a Polygon, return a rotated Polygon
     if isinstance(geometry, Polygon):
         return Polygon(rotated_vertices)
 
