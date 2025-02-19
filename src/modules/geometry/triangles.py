@@ -13,50 +13,47 @@ import numpy as np
 from modules.geometry.transform_utils import (
     rotate_shape,
     stretch_both_sides,
+    translate_shape,
 )
 from modules.geometry.shape_utils import save_as_stl
 from shapely.geometry import Polygon
 
 
-def create_triangle(center=(0, 0), side_length=2.0):
+def create_triangle(side_length=2.0):
     """
-    Gera um triângulo equilátero com base no centro e no tamanho da aresta.
+    Gera um triângulo equilátero com centro em (0, 0) e tamanho da aresta especificado.
 
     Parameters:
-        center (tuple): Coordenadas (x, y) do centro do triângulo (default: (0, 0)).
         side_length (float): O tamanho da aresta do triângulo (default: 2.0).
 
     Returns:
         Polygon: A geometria do triângulo como um objeto Shapely Polygon.
     """
     height = np.sqrt(3) / 2 * side_length
-    V1 = (center[0], center[1] + height / 2)
-    V2 = (center[0] - side_length / 2, center[1] - height / 2)
-    V3 = (center[0] + side_length / 2, center[1] - height / 2)
+    # As coordenadas dos vértices agora são calculadas com o centro fixo em (0, 0)
+    V1 = (0, height / 2)  # Vértice superior
+    V2 = (-side_length / 2, -height / 2)  # Vértice inferior esquerdo
+    V3 = (side_length / 2, -height / 2)  # Vértice inferior direito
 
     return Polygon([V1, V2, V3])
 
 
-def generate_triangles():
-    """
-    Generate and save all triangles with various stretch and rotation transformations.
-    """
-    stretch_factors = [0.75, 1.0, 1.5, 2.0]
-    rotation_angles = [0, 15, 30, 45, 60, 75]
-
-    for left_factor in stretch_factors:
-        for right_factor in stretch_factors:
-            for angle in rotation_angles:
-                triangle = create_triangle()
-                triangle = stretch_both_sides(triangle, left_factor, right_factor)
-                triangle = rotate_shape(triangle, angle)
-
-                filename = f"triangle_L{int(left_factor * 100)}_R{int(right_factor * 100)}_Rot{angle}.stl"
-                save_as_stl(triangle, filename)
-
-                print(f"Generated: {filename}")
+# -------------------------------------------------------- #
 
 
-# Para testes diretos
-if __name__ == "__main__":
-    generate_triangles()
+def create_side_triangle(side="left"):
+
+    triangle = create_triangle()
+
+    if side == "left":
+        triangle = rotate_shape(triangle, 90)
+        triangle = translate_shape(triangle, dx=-np.sqrt(3) / 2)
+
+    elif side == "right":
+        triangle = rotate_shape(triangle, -90)
+        triangle = translate_shape(triangle, dx=np.sqrt(3) / 2)
+
+    return triangle
+
+
+# -------------------------------------------------------- #

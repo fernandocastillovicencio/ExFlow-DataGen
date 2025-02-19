@@ -16,35 +16,9 @@ import numpy as np
 from modules.geometry.transform_utils import (
     stretch_both_sides,
     rotate_shape,
-    shear_horizontal,
+    translate_shape,
 )
 from modules.geometry.shape_utils import save_as_stl, save_as_png
-
-
-def create_square_old():
-    """
-    Creates a square with side length of 1, centered at (0, 0).
-
-    The vertices are:
-
-    v0 (bottom-left): (-0.5, -0.5, 0)
-    v1 (bottom-right): (0.5, -0.5, 0)
-    v2 (top-right): (0.5, 0.5, 0)
-    v3 (top-left): (-0.5, 0.5, 0)
-
-    The faces are two triangles that form the square:
-
-    f0 (bottom): v0 -> v1 -> v2
-    f1 (top): v0 -> v2 -> v3
-
-    Returns:
-        tuple: (vertices, faces) - Vertices and faces of the square.
-    """
-    vertices = np.array(
-        [[-0.5, -0.5, 0], [0.5, -0.5, 0], [0.5, 0.5, 0], [-0.5, 0.5, 0]]
-    )
-    faces = [[0, 1, 2], [0, 2, 3]]  # Two triangles that form the square
-    return vertices, faces
 
 
 def create_rhombus():
@@ -136,40 +110,85 @@ def generate_quadrilaterals():
 import shapely.geometry as sg
 import numpy as np
 
+# -------------------------------------------------------- #
+from shapely.geometry import Polygon
 
-def create_square(size=1, center=(0, 0), num_segments=10):
+
+def create_square(size=2):
     """
-    Cria um quadrado de qualquer tamanho e posição, com `num_segments` segmentos por aresta.
+    Cria um quadrado centrado em (0, 0) com o tamanho da aresta especificado.
 
-    Parameters:
-    - size: Lado do quadrado. Padrão é 1.
-    - center: Posição central do quadrado (x, y). Padrão é (0, 0).
-    - num_segments: Número de segmentos em cada aresta. Padrão é 10.
-
-    Returns:
-    - sg.Polygon: O quadrado gerado pelo Shapely.
+    O centro é sempre fixo em (0, 0), e a geometria é gerada com o tamanho da aresta dado.
     """
     half_size = size / 2
 
-    # Definir os 4 vértices do quadrado
+    # Definir os 4 vértices do quadrado com centro em (0, 0)
     points = [
-        (center[0] - half_size, center[1] - half_size),  # Ponto inferior esquerdo
-        (center[0] + half_size, center[1] - half_size),  # Ponto inferior direito
-        (center[0] + half_size, center[1] + half_size),  # Ponto superior direito
-        (center[0] - half_size, center[1] + half_size),  # Ponto superior esquerdo
+        (-half_size, -half_size),  # Ponto inferior esquerdo
+        (half_size, -half_size),  # Ponto inferior direito
+        (half_size, half_size),  # Ponto superior direito
+        (-half_size, half_size),  # Ponto superior esquerdo
     ]
 
-    # Gerar os segmentos para a malha (10 segmentos por aresta)
-    segments = []
-    for i in range(4):
-        x1, y1 = points[i]
-        x2, y2 = points[(i + 1) % 4]  # Liga com o próximo ponto
-        for j in range(num_segments + 1):
-            x = x1 + (x2 - x1) * j / num_segments
-            y = y1 + (y2 - y1) * j / num_segments
-            segments.append((x, y))
-
-    # Fechar o quadrado e criar o polígono
-    square = sg.Polygon(segments)
+    # Criar o polígono quadrado com Shapely
+    square = Polygon(points)
 
     return square
+
+    # ------------------------------------------------------------------------ #
+
+
+def create_rectangle(width=2, height=1):
+    """
+    Cria um retângulo centrado em (0, 0) com a largura e altura especificadas.
+
+    Parameters:
+        width (float, optional): Largura do retângulo (default: 2).
+        height (float, optional): Altura do retângulo (default: 1).
+
+    Returns:
+        Polygon: A geometria do retângulo como um objeto Shapely Polygon.
+    """
+    half_width = width / 2
+    half_height = height / 2
+
+    # Definir os 4 vértices do retângulo com centro em (0, 0)
+    points = [
+        (-half_width, -half_height),  # Inferior esquerdo
+        (half_width, -half_height),  # Inferior direito
+        (half_width, half_height),  # Superior direito
+        (-half_width, half_height),  # Superior esquerdo
+    ]
+
+    # Criar o polígono retangular com Shapely
+    rectangle = Polygon(points)
+
+    return rectangle
+
+
+# -------------------------------------------------------- #
+def create_side_square(side="left"):
+
+    square = create_square()
+
+    if side == "left":
+        square = translate_shape(square, dx=-1.0 + 1e-5)
+
+    elif side == "right":
+        square = translate_shape(square, dx=1.0 - 1e-5)
+
+    return square
+
+
+# -------------------------------------------------------- #
+def create_side_rectangle(side="left"):
+
+    rectangle = create_rectangle(width=1, height=2)
+
+    if side == "left":
+        rectangle = translate_shape(rectangle, dx=-0.5 + 1e-5)
+
+    elif side == "right":
+        rectangle = translate_shape(rectangle, dx=0.5 - 1e-5)
+
+    return rectangle

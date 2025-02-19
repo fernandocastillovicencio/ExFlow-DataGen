@@ -2,53 +2,34 @@ import numpy as np
 
 from shapely.affinity import translate
 
-from modules.geometry.shape_utils import generate_mesh_from_polygon
+from modules.geometry.shape_utils import generate_mesh_from_polygon, merge_shapes
+
 from modules.geometry.transform_utils import (
     rotate_shape,
     stretch_one_side,
     translate_shape,
 )
-from modules.geometry.ellipsoids import create_semicircle
-from modules.geometry.triangles import create_triangle
-
-
-def generate_circle_triangle_CT():
-    semicircle = create_semicircle()
-    semicircle = rotate_shape(semicircle, 90)
-
-    triangle = create_triangle(center=(0.0, np.sqrt(3) / 2), side_length=2.0)
-    triangle = rotate_shape(triangle, -90)
-    return semicircle, triangle
-
-
-def generate_circle_triangle_TC():
-    semicircle = create_semicircle()
-    semicircle = rotate_shape(semicircle, -90)
-
-    triangle = create_triangle()
-    triangle = rotate_shape(triangle, 90)
-    triangle = translate_shape(triangle, dx=-np.sqrt(3) / 2)
-
-    return semicircle, triangle
+from modules.geometry.ellipsoids import create_semicircle, create_side_semicircle
+from modules.geometry.triangles import create_triangle, create_side_triangle
+from modules.geometry.quadrilaterals import (
+    create_square,
+    create_side_square,
+    create_side_rectangle,
+)
+from modules.geometry.basic_forms import create_basic_shape
 
 
 def generate_combined_circle_triangle():
-    """
-    Combina um semicírculo e um triângulo em um único STL.
-    """
 
-    semicircle, triangle = generate_circle_triangle_TC()
+    left_shape = create_basic_shape(shape="rectangle", side="left")
+    right_shape = create_basic_shape(shape="rectangle", side="right")
 
-    semicircle = stretch_one_side(semicircle, "right", 1.5)
+    mix = merge_shapes(left_shape, right_shape)
 
-    triangle = stretch_one_side(triangle, "left", 1.25)
+    mix = create_basic_shape(shape="rectangle", side="left")
 
-    combined_geometry = semicircle.union(triangle)
-    # combined_geometry = rotate_shape(combined_geometry, -20)
-
-    generate_mesh_from_polygon(
-        combined_geometry, stl_filename="combined_circle_triangle.stl"
-    )
+    # # ---------------------------------------------------- #
+    generate_mesh_from_polygon(mix, stl_filename="combined_circle_triangle.stl")
 
     print("Generated: combined_circle_triangle.stl")
 

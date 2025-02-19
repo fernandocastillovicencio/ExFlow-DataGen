@@ -17,164 +17,6 @@ Functions:
   rotating the first semicircle by 180 degrees and combining the vertices and faces.
 """
 
-import numpy as np
-
-
-def shear_horizontal(vertices, shear_factor):
-    """
-    Apply horizontal shear transformation to the shape.
-
-    Parameters:
-        vertices (np.ndarray): Shape vertices (N,3).
-        shear_factor (float): Shear factor to control the magnitude of shearing.
-
-    Returns:
-        np.ndarray: Sheared vertices.
-    """
-    # Apply shear transformation
-    sheared_vertices = vertices.copy()
-
-    # Apply shear to each vertex
-    sheared_vertices[:, 0] += (
-        shear_factor * sheared_vertices[:, 1]
-    )  # shear factor applied to x
-
-    return sheared_vertices
-
-
-def rotate_shapes(vertices, angle_degrees):
-    """
-    Rotate a shape counterclockwise around (0,0) by a given angle.
-
-    This function handles both 2D and 3D vertices. The rotation is done in the XY plane
-    for 3D shapes, effectively rotating the shape around the Z-axis.
-
-    Parameters:
-        vertices (np.ndarray): Shape vertices (N, 2 or 3), with optional z=0 for 2D shapes.
-        angle_degrees (float): Rotation angle in degrees.
-
-    Returns:
-        np.ndarray: Rotated vertices (N, 2 or 3).
-    """
-    # Convert angle from degrees to radians
-    angle_radians = np.radians(angle_degrees)
-
-    # Check if the shape is 2D or 3D (check if z exists in the vertices)
-    if vertices.shape[1] == 2:  # 2D
-        # Rotation matrix for 2D rotation
-        rotation_matrix = np.array(
-            [
-                [np.cos(angle_radians), -np.sin(angle_radians)],
-                [np.sin(angle_radians), np.cos(angle_radians)],
-            ]
-        )
-        # Apply rotation to x and y, z remains unchanged (implicitly)
-        rotated_vertices = vertices @ rotation_matrix.T
-        return rotated_vertices
-
-    elif vertices.shape[1] == 3:  # 3D
-        # Rotation matrix for 3D rotation in the XY plane
-        rotation_matrix = np.array(
-            [
-                [np.cos(angle_radians), -np.sin(angle_radians), 0],
-                [np.sin(angle_radians), np.cos(angle_radians), 0],
-                [0, 0, 1],
-            ]
-        )
-        # Apply rotation to x, y and z (rotation in the XY plane)
-        rotated_vertices = vertices @ rotation_matrix.T
-        return rotated_vertices
-
-    else:
-        raise ValueError("Vertices must have 2 or 3 columns (2D or 3D shapes).")
-
-
-def merge_shapes(vertices1, faces1):
-    """
-    Merge two semicircles to create a full circle.
-
-    This function takes the vertices and faces of one semicircle, creates a second
-    semicircle by rotating the first one by 180 degrees, and then merges both to
-    create a full circle.
-
-    Parameters:
-        vertices1 (np.ndarray): Vertices of the first semicircle (N,3).
-        faces1 (list): Faces of the first semicircle.
-
-    Returns:
-        tuple: (vertices, faces) - Full merged shape.
-    """
-    # Create a rotation matrix to rotate the first semicircle by 180 degrees.
-    # This is equivalent to flipping the x and y axes.
-    rotation_matrix = np.array([[-1, 0, 0], [0, -1, 0], [0, 0, 1]])
-
-    # Apply the rotation matrix to the vertices of the first semicircle to create
-    # the second semicircle.
-    vertices2 = vertices1 @ rotation_matrix.T
-
-    # Offset the face indices of the second semicircle by the length of the first
-    # semicircle. This is because the faces of the second semicircle are computed
-    # relative to the vertices of the first semicircle.
-    faces2 = (np.array(faces1) + len(vertices1)).tolist()
-
-    # Merge the vertices and faces of both semicircles to create the full circle.
-    vertices = np.vstack((vertices1, vertices2))
-    faces = faces1 + faces2
-
-    return vertices, faces
-
-
-# ---------------------------------------------------------------------------- #
-
-import numpy as np
-from shapely.geometry import Polygon
-
-
-def rotate_shape(geometry, angle_deg, center=(0, 0)):
-    """
-    Gira a geometria (Polygon) pelo ângulo especificado.
-
-    Parameters:
-        geometry (Polygon): A geometria a ser rotacionada.
-        angle_deg (float): O ângulo de rotação em graus.
-        center (tuple): O ponto de rotação (default é (0, 0)).
-
-    Returns:
-        Polygon: A geometria rotacionada.
-    """
-    # Converte o ângulo de graus para radianos
-    angle_rad = np.radians(angle_deg)
-
-    # Matriz de rotação 2D
-    rotation_matrix = np.array(
-        [
-            [np.cos(angle_rad), -np.sin(angle_rad)],
-            [np.sin(angle_rad), np.cos(angle_rad)],
-        ]
-    )
-
-    # Função para rotacionar os vértices de um polígono
-    def rotate_vertices(vertices):
-        # Subtrai o centro da geometria para que a rotação seja em torno do centro
-        rotated = []
-        for x, y in vertices:
-            x_new, y_new = np.dot(
-                rotation_matrix, np.array([x - center[0], y - center[1]])
-            )
-            rotated.append(
-                (x_new + center[0], y_new + center[1])
-            )  # Revertendo a translação
-        return rotated
-
-    # Rotacionando a geometria
-    if isinstance(geometry, Polygon):
-        # Para Polygon, apenas rotacionamos os pontos do exterior
-        exterior_coords = rotate_vertices(list(geometry.exterior.coords))
-        return Polygon(exterior_coords)
-    else:
-        raise ValueError("A geometria deve ser um Polygon do Shapely.")
-
-
 # ---------------------------------------------------------------------------- #
 
 import numpy as np
@@ -259,3 +101,55 @@ def translate_shape(shape, dx=0.0, dy=0.0):
 
     # Cria um novo Polygon com os pontos transladados
     return Polygon(translated_coords)
+
+
+# -------------------------------------------------------- #
+
+import numpy as np
+
+
+def rotate_shape(geometry, angle_degrees):
+    """
+    Rotaciona uma geometria 2D (Polygon do Shapely ou array de vértices) a partir de um ângulo dado.
+    A rotação é feita no plano XY para 2D.
+
+    Parameters:
+        geometry (Polygon or np.ndarray): Geometria do Shapely ou array de vértices (N,2).
+        angle_degrees (float): O ângulo de rotação em graus.
+
+    Returns:
+        Polygon: Geometria rotacionada (caso seja Shapely).
+        np.ndarray: Vértices rotacionados (caso seja array NumPy).
+    """
+    # Se for um objeto Shapely, extrai os vértices e converte para array NumPy
+    if isinstance(geometry, Polygon):
+        vertices = np.array(geometry.exterior.coords)
+    else:
+        vertices = np.array(geometry)
+
+    # Garantir que há pelo menos uma dimensão válida para multiplicação
+    if vertices.ndim == 1:
+        vertices = vertices.reshape(1, -1)
+
+    # Converter o ângulo de graus para radianos
+    angle_radians = np.radians(angle_degrees)
+
+    # Matriz de rotação 2D (para a rotação no plano XY)
+    rotation_matrix = np.array(
+        [
+            [np.cos(angle_radians), -np.sin(angle_radians)],
+            [np.sin(angle_radians), np.cos(angle_radians)],
+        ]
+    )
+
+    # Aplicando a rotação
+    rotated_vertices = vertices[:, :2] @ rotation_matrix.T  # Multiplicação matricial
+
+    # Se a entrada era um Polygon, retorna um Polygon rotacionado
+    if isinstance(geometry, Polygon):
+        return Polygon(rotated_vertices)
+
+    return rotated_vertices
+
+
+# -------------------------------------------------------- #

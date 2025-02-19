@@ -18,11 +18,11 @@ Simplified imports for users:
 """
 
 # Importing functions and classes from sub-modules
-from .semicircles import create_semicircle
-from .ellipsoids import generate_ellipsoids
-from .triangles import generate_triangles
-from .transform_utils import rotate_shape, stretch_one_side
-from .shape_utils import save_as_stl, save_as_png
+# from .semicircles import create_semicircle
+# from .ellipsoids import generate_ellipsoids
+# from .triangles import generate_triangles
+# from .transform_utils import rotate_shape, stretch_one_side
+# from .shape_utils import save_as_stl, save_as_png
 
 # Simplified imports for users
 # from geometry import create_semicircle, generate_ellipsoids, generate_triangles
