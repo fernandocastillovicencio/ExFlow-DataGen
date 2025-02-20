@@ -43,9 +43,11 @@ def create_circle(
     Raises:
         ValueError: If the end angle is not greater than the start angle.
     """
+    tol = 1e-6
     # If end_angle is not provided, set it to 360 to create a full circle
     if end_angle is None:  # Check if end_angle is None
         end_angle = 360  # Full circle
+        tol = 0.0
     elif (
         start_angle >= end_angle
     ):  # Check if start_angle is greater than or equal to end_angle

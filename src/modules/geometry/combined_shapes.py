@@ -12,6 +12,9 @@ from modules.geometry.simples_shapes import (
     create_quadrilateral,  # Import create_quadrilateral function
 )
 
+from modules.geometry.domain import extrude_2d_to_3d, exporting_stl_ascii
+
+
 # Define tolerance value
 tol = 1e-6
 
@@ -99,7 +102,13 @@ def generate_combined_circle_triangle():
 
     Returns:
         Polygon: The combined shape.
+
     """
+    # ---------------------------------------------------- #
+    import os
+
+    STL_DIR = "geometries/domain"
+    # ------------------------------------------------ #
     shape1 = "circle"
     shape2 = "triangle"
 
@@ -131,6 +140,14 @@ def generate_combined_circle_triangle():
                         right_stretch,
                         angle,
                     )
+
+                    # ------------------------------------ #
+
+                    vertices, faces = extrude_2d_to_3d(rotated)
+                    name = f"test_lstretch{int(left_stretch*100):03d}_rstretch{int(right_stretch*100):03d}_rot{int(angle):03d}"
+                    stl_name = os.path.join(STL_DIR, f"{name}" + ".stl")
+                    exporting_stl_ascii(vertices, faces, stl_name)
+
     return combined
 
 
