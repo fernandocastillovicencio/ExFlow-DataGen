@@ -2,42 +2,42 @@ import os
 from stl import mesh
 import numpy as np
 
+import os
+from stl import mesh
+import numpy as np
 
-def get_bounding_box(stl_file):
+
+def calculate_centroid_from_faces(stl_file):
     """
-    Lê o arquivo STL e calcula o bounding box.
+    Calcula o centroide ponderado de um objeto 3D a partir das faces do STL.
 
     Parameters:
         stl_file (str): Caminho para o arquivo STL.
 
     Returns:
-        tuple: Bounding box (min_x, max_x, min_y, max_y, min_z, max_z), centroid
+        np.ndarray: O centroide ponderado calculado a partir das faces.
     """
-    # Carregar o arquivo STL
     stl_mesh = mesh.Mesh.from_file(stl_file)
+    centroid = np.zeros(3)
+    total_area = 0.0
 
-    # Obter todos os vértices
-    vertices = stl_mesh.vectors.reshape(-1, 3)
+    for i in range(len(stl_mesh.vectors)):
+        v0, v1, v2 = stl_mesh.vectors[i]
 
-    # Calcular o bounding box
-    min_coords = np.min(vertices, axis=0)
-    max_coords = np.max(vertices, axis=0)
+        vec1 = v1 - v0
+        vec2 = v2 - v0
 
-    # Calcular o centroide (média das coordenadas dos vértices)
-    centroid = np.mean(vertices, axis=0)
+        area = np.linalg.norm(np.cross(vec1, vec2)) / 2.0
+        face_centroid = (v0 + v1 + v2) / 3.0
 
-    return (
-        min_coords[0],
-        max_coords[0],
-        min_coords[1],
-        max_coords[1],
-        min_coords[2],
-        max_coords[2],
-        centroid,
-    )
+        centroid += face_centroid * area
+        total_area += area
+
+    centroid /= total_area
+    return centroid
 
 
-def move_to_centroid(vertices, centroid):
+def move_to_origin(vertices, centroid):
     """
     Move o objeto para que o centroide coincida com (0, 0).
 
@@ -48,15 +48,82 @@ def move_to_centroid(vertices, centroid):
     Returns:
         numpy array: Vértices movidos com o centroide em (0,0).
     """
-    # Mover o objeto para que o centroide seja (0, 0)
-    moved_vertices = vertices - centroid
-    return moved_vertices
+    return vertices - centroid
 
 
-def process_stl_files(directory, domain_width=260, domain_height=120):
+def scale_stl(vertices, scale_factor):
     """
-    Processa todos os arquivos STL em um diretório, calcula o bounding box, move o objeto,
-    e calcula os fatores de escala.
+    Aplica a escala ao STL mantendo o centroide em (0,0).
+
+    Parameters:
+        vertices (numpy array): Vértices do objeto STL.
+        scale_factor (float): Fator de escala.
+
+    Returns:
+        numpy array: Vértices escalados.
+    """
+    return vertices * scale_factor
+
+
+def calculate_new_centroid(vertices):
+    """
+    Calcula o novo centroide do objeto após a transformação (escala).
+
+    Parameters:
+        vertices (numpy array): Vértices transformados do objeto.
+
+    Returns:
+        np.ndarray: O novo centroide do objeto.
+    """
+    new_centroid = np.mean(vertices, axis=0)  # Cálculo da média dos vértices
+    return new_centroid
+
+
+def calculate_new_bounding_box(vertices):
+    """
+    Calcula o novo bounding box do objeto após a transformação (escala).
+
+    Parameters:
+        vertices (numpy array): Vértices transformados do objeto.
+
+    Returns:
+        tuple: O novo bounding box (min_coords, max_coords).
+    """
+    min_coords = np.min(vertices, axis=0)
+    max_coords = np.max(vertices, axis=0)
+    return min_coords, max_coords
+
+
+def save_scaled_stl(vertices, original_stl, output_directory, scale_factor):
+    """
+    Salva um novo arquivo STL após a aplicação da escala.
+
+    Parameters:
+        vertices (numpy array): Vértices escalados.
+        original_stl (str): Caminho do arquivo STL original.
+        output_directory (str): Diretório onde salvar o STL escalado.
+        scale_factor (float): Fator de escala aplicado.
+
+    Returns:
+        None
+    """
+    num_faces = vertices.shape[0] // 3
+    new_mesh = mesh.Mesh(np.zeros(num_faces, dtype=mesh.Mesh.dtype))
+
+    for i in range(num_faces):
+        new_mesh.vectors[i] = vertices[i * 3 : (i + 1) * 3]
+
+    base_name = os.path.basename(original_stl).replace(".stl", "")
+    output_file = os.path.join(output_directory, f"{base_name}.stl")
+
+    new_mesh.save(output_file)
+    print(f"STL escalado salvo em: {output_file}")
+
+
+def process_and_scale_stl(directory, domain_width=260, domain_height=120):
+    """
+    Processa os dois primeiros arquivos STL no diretório, calcula o bounding box, move o objeto,
+    aplica a escala com base no domínio e salva o novo STL, calculando o novo centroide e bounding box.
 
     Parameters:
         directory (str): Caminho do diretório onde os arquivos STL estão armazenados.
@@ -66,39 +133,59 @@ def process_stl_files(directory, domain_width=260, domain_height=120):
     Returns:
         None
     """
-    # Iterar sobre os arquivos no diretório
-    for filename in os.listdir(directory):
-        if filename.endswith(".stl"):
-            file_path = os.path.join(directory, filename)
-            min_x, max_x, min_y, max_y, min_z, max_z, centroid = get_bounding_box(
-                file_path
-            )
+    output_directory = "geometries/domain"
+    os.makedirs(output_directory, exist_ok=True)
 
-            # Calcular as dimensões do objeto
-            object_width = max_x - min_x
-            object_height = max_y - min_y
+    # Obter os dois primeiros arquivos STL no diretório
+    stl_files = [f for f in os.listdir(directory) if f.endswith(".stl")][:2]
 
-            # Calcular a escala
-            scalex = domain_width / object_width / 13
-            scaley = domain_height / object_height / 13
+    # Iterar apenas sobre os dois primeiros arquivos
+    for filename in stl_files:
+        file_path = os.path.join(directory, filename)
 
-            print(f"Bounding Box para {filename}:")
-            print(f"Width: {object_width}")
-            print(f"Height: {object_height}")
-            print(f"scalex: {scalex}")
-            print(f"scaley: {scaley}")
+        # Calcular o centroide ponderado
+        centroid = calculate_centroid_from_faces(file_path)
 
-            # Mover o objeto para o centroide
-            stl_mesh = mesh.Mesh.from_file(file_path)
-            vertices = stl_mesh.vectors.reshape(-1, 3)
-            moved_vertices = move_to_centroid(vertices, centroid)
+        # Carregar o arquivo STL
+        stl_mesh = mesh.Mesh.from_file(file_path)
+        vertices = stl_mesh.vectors.reshape(-1, 3)
 
-            # Mostrar os novos vértices movidos
-            print(f"Centroid original: {centroid}")
-            print(f"Vértices movidos (apenas os primeiros 5): {moved_vertices[:5]}")
-            print("-" * 40)
+        # Calcular o bounding box do objeto
+        min_coords = np.min(vertices, axis=0)
+        max_coords = np.max(vertices, axis=0)
+
+        # Mover o objeto para o centroide
+        moved_vertices = move_to_origin(vertices, centroid)
+
+        # Calcular fator de escala
+        scalex = domain_width / (max_coords[0] - min_coords[0]) / 13
+        scaley = domain_height / (max_coords[1] - min_coords[1]) / 5
+        scale = min(scalex, scaley)
+
+        # Aplicar escala
+        scaled_vertices = scale_stl(moved_vertices, scale)
+
+        # Calcular o novo centroide e o novo bounding box após a transformação
+        new_centroid = calculate_new_centroid(scaled_vertices)
+        new_min_coords, new_max_coords = calculate_new_bounding_box(scaled_vertices)
+
+        # Salvar STL escalado
+        save_scaled_stl(scaled_vertices, file_path, output_directory, scale)
+
+        # Mostrar resultados
+        print(f"\nProcessado: {filename}")
+        print(
+            f"Bounding Box Original -> Width: {max_coords[0] - min_coords[0]}, Height: {max_coords[1] - min_coords[1]}"
+        )
+        print(f"Escala aplicada -> ScaleX: {scalex}, ScaleY: {scaley}, Final: {scale}")
+        print(f"Centroide Original: {centroid}")
+        print(f"Novo Centroide: {new_centroid}")
+        print(
+            f"Novo Bounding Box -> Width: {new_max_coords[0] - new_min_coords[0]}, Height: {new_max_coords[1] - new_min_coords[1]}"
+        )
+        print("-" * 40)
 
 
 # Exemplo de uso
 stl_directory = "geometries/obstacles/stl"  # Altere para o caminho correto
-process_stl_files(stl_directory)
+process_and_scale_stl(stl_directory)
