@@ -20,64 +20,74 @@ ExFlow-DataGen/
     ├── run_pipeline.py             # 🔥 Full pipeline execution
     ├── test_modules.py             # 🛠 Individual module testing
 ```
+# ExFlow-DataGen Progress Report
 
-✅ Recent Progress
-📌 1️⃣ Modularized Geometry Transformations
+## **Current Status**
+✅ Successfully implemented shape generation functions:
+   - Circles, ellipses, triangles, and quadrilaterals.
+   - Ability to apply stretching, rotation, and transformations.
 
-Goal: Moved all geometric transformations (deformation, rotation, merging) to transform_utils.py.
-Outcome:
-The ellipsoid geometry generation in ellipsoid.py now relies on functions imported from transform_utils.py, making the code more modular and easier to maintain.
-Functions like stretch_both_sides(), rotate_shape(), and merge_shapes() are now reusable and isolated from more complex geometric calculations, allowing flexibility for future shape additions.
+✅ PNG and STL file generation working correctly:
+   - PNG images are properly scaled and saved.
+   - STL files are generated with Delaunay triangulation.
 
-📌 2️⃣ Ensured Unique File Generation
+✅ Codebase structured with modular design:
+   - Separated geometry, meshing, solving, and postprocessing.
+   - Unit tests implemented for core functions.
 
-Goal: Ensure that the default circle geometry (Ldef100, Rdef100, Rot000) is only generated once and avoid duplications in geometries created for different deformations and rotations.
-Outcome:
-The combination Ldef100_Rdef100_Rot000 (undistorted circle) is now generated only once.
-Ellipsoids and semicircles are correctly generated and named based on the deformation factors and rotation angles, avoiding the creation of identical geometries.
+---
 
-📌 3️⃣ Optimized Function Names for Clarity
+## **Issues Identified**
+⚠️ **Triangle alignment issue in PNG output**  
+   - Some generated triangles are not centered properly in PNG images.
+   - Requires correction in `save_as_png()` by adjusting the bounding box.
 
-Goal: Improve the clarity of function names and maintain consistent naming conventions across files.
-Outcome:
-Renamed functions to enhance readability and maintainability, including:
-deform_half()
-deform_both_sides()
-rotate_shape()
-merge_shapes()
-These changes ensure that geometric transformations are done in a modular and intuitive manner.
+⚠️ **Redundant file generation in `generate_ellipsoids()`**  
+   - Shapes with `stretch_factors = [1.0]` and `rotation_angles = [0.0]` are unnecessary.
+   - Implemented a check to avoid redundant saves.
 
-📌 4️⃣ Fixed Infinite Loop & Execution Issues
+⚠️ **Bounding box margin inconsistencies**  
+   - Some images have excessive white space around the shape.
+   - Adjusting bounding box margins to `1.1` instead of `1.2` where necessary.
 
-Goal: Fix issues with infinite loops and execution in obstacles.py.
-Outcome:
-Removed the recursive loop that caused problems when trying to generate obstacles repeatedly.
-Execution tests are now clear, and there are no redundant executions in the code.
-test_modules.py now correctly imports and tests both the ellipsoids and semicircles modules without errors.
+---
 
-📌 5️⃣ Improved Shape Handling & Processing
+## **Next Steps**
+📌 **Refine Image Centering Logic**
+   - Ensure all obstacles, including asymmetric ones, are centered correctly.
+   - Adjust centroid calculations and bounding box offsets.
 
-Goal: Improve the handling and processing of geometric shapes to make the code more flexible and modular.
-Outcome:
-transform_utils.py now handles all geometric transformations, making the code cleaner and reusable.
-Shape processing is now more organized, allowing easy expansion for future shapes without duplicating code.
+📌 **Improve STL File Handling**
+   - Validate triangulation quality for all shapes.
+   - Optimize STL output for better compatibility with OpenFOAM.
 
+📌 **Optimize Performance**
+   - Reduce computation time in `rotate_shape()` and `stretch_one_side()`.
+   - Optimize `save_as_png()` to minimize unnecessary processing.
 
-✅ Next Steps
-📌 Verify correct shape outputs
+📌 **Document API and Add Examples**
+   - Provide clear function documentation.
+   - Add example scripts for generating and testing geometries.
 
-Verify that the generated files for geometries are correctly located in the following directories:
-geometries/obstacles/stl/
-geometries/obstacles/images/
-Ensure that the names and parameters of the generated geometries (STL and PNG) are as expected, with no duplication.
+---
 
-📌 Test full execution
+## **Milestones**
+🚀 **Version 0.1 - Initial Shape Generation (Completed)**
+   - Basic shape generation and transformations.
+   - STL and PNG output functional.
 
-To run the full obstacle generation execution, use the following command:
-bash
-Copy
-PYTHONPATH=src python src/modules/geometry/obstacles.py
+🚀 **Version 0.2 - Image and Mesh Refinement (In Progress)**
+   - Fix image centering issues.
+   - Optimize mesh generation.
 
-📌 Confirm correctness of generated STL and PNG files
+🚀 **Version 0.3 - OpenFOAM Integration (Planned)**
+   - Connect shape generation with OpenFOAM meshing.
+   - Automate solver execution for generated geometries.
 
-Validate that the STL and PNG files generated are correct in terms of shape and representativity. This includes checking names and ensuring there are no duplicates.
+---
+
+## **Contributor Notes**
+- **Run `test_modules.py` before committing changes.**
+- **Use branch-based development (feature/bugfix/hotfix).**
+- **Ensure modular and reusable code.**
+- **Follow PEP 8 coding standards.**
