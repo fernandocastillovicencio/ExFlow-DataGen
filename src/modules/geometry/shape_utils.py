@@ -20,7 +20,66 @@ import numpy as np
 from stl import mesh
 from scipy.spatial import Delaunay
 
+# -------------------------------------------------------- #
 
+
+# -------------------------------------------------------- #
+#                        NEW VERSION                       #
+# -------------------------------------------------------- #
+def save_as_stl_new(geometry, stl_filename="output.stl"):
+    """
+    Generate an STL mesh from a Shapely Polygon using Delaunay triangulation and save it in ASCII format.
+
+    Parameters:
+        geometry (Polygon): The Shapely Polygon to be converted to a mesh.
+        stl_filename (str): The name of the output STL file (default: "output.stl").
+
+    Returns:
+        None
+    """
+    # Check if the input geometry is a Shapely Polygon
+    if not isinstance(geometry, Polygon):
+        raise ValueError("The input geometry must be a Shapely Polygon.")
+
+    # Extract the vertices from the geometry and add z=0 to each coordinate (converting to 3D)
+    vertices = np.array([list(coord) + [0] for coord in geometry.exterior.coords])
+
+    # Use Delaunay triangulation to triangulate the geometry
+    delaunay = Delaunay(vertices[:, :2])  # Delaunay works only in 2D
+
+    # Generate the faces from the Delaunay triangulation
+    faces = delaunay.simplices
+
+    # Open the file to write in ASCII format
+    with open(stl_filename, "w") as stl_file:
+        # Write the STL header (beginning of the file)
+        stl_file.write(f"solid {stl_filename}\n")
+
+        # Write each face's normal and vertices
+        for face in faces:
+            # Calculate the normal (for simplicity, we use a placeholder normal vector here)
+            normal = [0.0, 0.0, 0.0]
+
+            # Write the facet
+            stl_file.write(f"  facet normal {normal[0]} {normal[1]} {normal[2]}\n")
+            stl_file.write(f"    outer loop\n")
+            for vertex in face:
+                stl_file.write(
+                    f"      vertex {vertices[vertex][0]} {vertices[vertex][1]} {vertices[vertex][2]}\n"
+                )
+            stl_file.write(f"    endloop\n")
+            stl_file.write(f"  endfacet\n")
+
+        # Write the STL footer (end of the file)
+        stl_file.write(f"endsolid {stl_filename}\n")
+
+    print(f"STL saved as ASCII: {stl_filename}")
+
+
+# -------------------------------------------------------- #
+# -------------------------------------------------------- #
+#                        OLD VERSION                       #
+# -------------------------------------------------------- #
 def save_as_stl(geometry, stl_filename="output.stl"):
     """
     Generate an STL mesh from a Shapely Polygon using Delaunay triangulation.
