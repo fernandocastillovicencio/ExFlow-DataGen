@@ -1,6 +1,7 @@
 # Import necessary functions from modules.geometry.simples_shapes
 from modules.geometry.simples_shapes import (
     generate_ellipsoids,
+    generate_semicircles,
     generate_triangles,
     generate_quadrilaterals,
 )
@@ -11,8 +12,6 @@ from modules.geometry.combined_shapes import (
     generate_combined_circle_square,
     generate_combined_triangle_square,
 )
-
-from modules.geometry.shape_utils import generate_mesh_from_polygon
 
 
 # -------------------------------------------------------- #
@@ -38,6 +37,7 @@ def generate_obstacles():
     categories = {
         "simple": [
             ("ellipsoid", generate_ellipsoids),  # Simple shape: ellipsoid
+            ("semicircle", generate_semicircles),  # Simple shape: semicircles
             ("triangle", generate_triangles),  # Simple shape: triangle
             ("quadrilateral", generate_quadrilaterals),  # Simple shape: quadrilateral
         ],
@@ -59,14 +59,8 @@ def generate_obstacles():
 
     # Loop through categories and subcategories
     for category, subcategories in categories.items():
-        print(f"Generating obstacles in category: {category}")  # Print category
         for shape_name, generation in subcategories:
-            print(f"Generating {shape_name} shape")  # Print shape name
             shape = generation()  # Generate shape
-            print(f"Saving {shape_name} shape as {shape_name}.stl file")
-            generate_mesh_from_polygon(
-                shape, stl_filename=shape_name + ".stl"
-            )  # Generate mesh from polygon and save as .stl file
 
 
 # Direct script execution

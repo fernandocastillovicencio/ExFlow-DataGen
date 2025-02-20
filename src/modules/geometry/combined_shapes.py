@@ -2,7 +2,8 @@
 import numpy as np
 
 # Import merge_shapes function from modules.geometry.shape_utils
-from modules.geometry.shape_utils import merge_shapes
+from modules.geometry.shape_utils import merge_shapes, save_files
+from modules.geometry.transform_utils import stretch_one_side, rotate_shape
 
 # Import shape creation functions from modules.geometry.simples_shapes
 from modules.geometry.simples_shapes import (
@@ -10,6 +11,7 @@ from modules.geometry.simples_shapes import (
     create_triangle,  # Import create_triangle function
     create_quadrilateral,  # Import create_quadrilateral function
 )
+
 
 # Define tolerance value
 tol = 1e-6
@@ -76,7 +78,8 @@ def create_starting_shape(shape="semicircle", side="left"):
                 (xmax, ymax),
                 (xmin, ymax),
             ]
-        )  # Create square
+        )
+        # Create square
 
     else:
         shape = None
@@ -98,13 +101,37 @@ def generate_combined_circle_triangle():
     Returns:
         Polygon: The combined shape.
     """
-    left_shape = create_starting_shape(
-        shape="circle", side="left"
-    )  # Create left semicircle
-    right_shape = create_starting_shape(
-        shape="triangle", side="right"
-    )  # Create right triangle
-    combined = merge_shapes(left_shape, right_shape)  # Merge shapes
+    shape1 = "circle"
+    shape2 = "triangle"
+
+    order = [(shape1, shape2, "1"), (shape2, shape1, "2")]
+
+    stretch_factors = [0.75, 1.0, 1.5, 2.0]  # Fatores de alongamento/compressão
+    rotation_angles = [0, 15, 30, 45, 60, 75]
+
+    for i in range(2):
+        left_type, right_type, index = order[i]
+
+        left_shape = create_starting_shape(shape=left_type, side="left")
+        right_shape = create_starting_shape(shape=right_type, side="right")
+
+        for right_stretch in stretch_factors:
+            right_long = stretch_one_side(right_shape, "right", right_stretch)
+            for left_stretch in stretch_factors:
+                # Aplicar alongamento nos dois lados
+                left_long = stretch_one_side(left_shape, "left", left_stretch)
+
+                combined = merge_shapes(left_long, right_long)
+                # Caso normal: Aplicar rotações
+                for angle in rotation_angles:
+                    rotated = rotate_shape(combined, angle)
+                    save_files(
+                        rotated,
+                        "combined_" + shape1 + "_" + shape2 + index,
+                        left_stretch,
+                        right_stretch,
+                        angle,
+                    )
     return combined
 
 
@@ -118,13 +145,37 @@ def generate_combined_circle_square():
     Returns:
         Polygon: The combined shape.
     """
-    left_shape = create_starting_shape(
-        shape="square", side="left"
-    )  # Create left square
-    right_shape = create_starting_shape(
-        shape="circle", side="right"
-    )  # Create right semicircle
-    combined = merge_shapes(left_shape, right_shape)  # Merge shapes
+    shape1 = "circle"
+    shape2 = "square"
+
+    order = [(shape1, shape2, "1"), (shape2, shape1, "2")]
+
+    stretch_factors = [0.75, 1.0, 1.5, 2.0]  # Fatores de alongamento/compressão
+    rotation_angles = [0, 15, 30, 45, 60, 75]
+
+    for i in range(2):
+        left_type, right_type, index = order[i]
+
+        left_shape = create_starting_shape(shape=left_type, side="left")
+        right_shape = create_starting_shape(shape=right_type, side="right")
+
+        for right_stretch in stretch_factors:
+            right_long = stretch_one_side(right_shape, "right", right_stretch)
+            for left_stretch in stretch_factors:
+                # Aplicar alongamento nos dois lados
+                left_long = stretch_one_side(left_shape, "left", left_stretch)
+
+                combined = merge_shapes(left_long, right_long)
+                # Caso normal: Aplicar rotações
+                for angle in rotation_angles:
+                    rotated = rotate_shape(combined, angle)
+                    save_files(
+                        rotated,
+                        "combined_" + shape1 + "_" + shape2 + index,
+                        left_stretch,
+                        right_stretch,
+                        angle,
+                    )
     return combined
 
 
@@ -138,11 +189,35 @@ def generate_combined_triangle_square():
     Returns:
         Polygon: The combined shape.
     """
-    left_shape = create_starting_shape(
-        shape="triangle", side="left"
-    )  # Create left triangle
-    right_shape = create_starting_shape(
-        shape="square", side="right"
-    )  # Create right square
-    combined = merge_shapes(left_shape, right_shape)  # Merge shapes
+    shape1 = "triangle"
+    shape2 = "square"
+
+    order = [(shape1, shape2, "1"), (shape2, shape1, "2")]
+
+    stretch_factors = [0.75, 1.0, 1.5, 2.0]  # Fatores de alongamento/compressão
+    rotation_angles = [0, 15, 30, 45, 60, 75]
+
+    for i in range(2):
+        left_type, right_type, index = order[i]
+
+        left_shape = create_starting_shape(shape=left_type, side="left")
+        right_shape = create_starting_shape(shape=right_type, side="right")
+
+        for right_stretch in stretch_factors:
+            right_long = stretch_one_side(right_shape, "right", right_stretch)
+            for left_stretch in stretch_factors:
+                # Aplicar alongamento nos dois lados
+                left_long = stretch_one_side(left_shape, "left", left_stretch)
+
+                combined = merge_shapes(left_long, right_long)
+                # Caso normal: Aplicar rotações
+                for angle in rotation_angles:
+                    rotated = rotate_shape(combined, angle)
+                    save_files(
+                        rotated,
+                        "combined_" + shape1 + "_" + shape2 + index,
+                        left_stretch,
+                        right_stretch,
+                        angle,
+                    )
     return combined

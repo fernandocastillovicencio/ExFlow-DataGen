@@ -3,12 +3,32 @@
 # -------------------------------------------------------- #
 # Import necessary modules
 import numpy as np
+import os
 from shapely.geometry import Polygon
+
+from modules.geometry.transform_utils import (
+    stretch_one_side,
+    stretch_both_sides,
+    rotate_shape,
+)
+from modules.geometry.shape_utils import save_files
+
+# -------------------------------------------------------- #
+#                         PREAMBLE                         #
+# -------------------------------------------------------- #
+# Define directories
+IMAGE_DIR = "geometries/obstacles/images"
+STL_DIR = "geometries/obstacles/stl"
+
+# Ensure directories exist
+os.makedirs(IMAGE_DIR, exist_ok=True)
+os.makedirs(STL_DIR, exist_ok=True)
 
 
 # -------------------------------------------------------- #
 #                        BASIC FORMS                       #
 # -------------------------------------------------------- #
+tol = 1e-6
 
 
 # ------------------------ circle ------------------------ #
@@ -44,7 +64,9 @@ def create_circle(
         raise ValueError("The end angle must be greater than the start angle.")
 
     # Generate points along the circumference based on start and end angles
-    theta = np.linspace(np.radians(start_angle), np.radians(end_angle), num=num_points)
+    theta = np.linspace(
+        np.radians(start_angle - tol), np.radians(end_angle + tol), num=num_points
+    )
     x = radius * np.cos(theta) + center[0]
     y = radius * np.sin(theta) + center[1]
 
@@ -92,10 +114,11 @@ def create_triangle(**kwargs):
         height = np.sqrt(3) / 2 * edge
         # Define vertices for an equilateral triangle centered at (0, 0)
         vertices = [
-            (0, height / 2),  # Top vertex
-            (-edge / 2, -height / 2),  # Bottom left vertex
-            (edge / 2, -height / 2),  # Bottom right vertex
+            (0, -height / 2),  # Bottom vertex (antes era topo)
+            (-edge / 2, height / 2),  # Top left vertex (antes era bottom left)
+            (edge / 2, height / 2),  # Top right vertex (antes era bottom right)
         ]
+
     else:
         raise ValueError("The function needs a 'vertices' or 'edge' parameter.")
 
@@ -148,8 +171,6 @@ def create_quadrilateral(**kwargs):
 
     return quadrilateral
 
-    return quadrilateral
-
 
 # -------------------------------------------------------- #
 #                        GENERATION                        #
@@ -158,16 +179,72 @@ def create_quadrilateral(**kwargs):
 # Define the generate_ellipsoids function
 def generate_ellipsoids():
     """
-    Generate an ellipsoid as a Shapely Polygon.
+    Generate an ellipsoid as a Shapely Polygon with variations.
 
-    The ellipsoid is a semicircle with its center at (0, 0) and a radius of 1.0.
+    Avoids redundant cases where both stretch factors are 1.0, meaning the shape remains a circle.
 
     Returns:
-        Polygon: A Shapely Polygon object representing the ellipsoid.
+        Polygon: The last generated Shapely Polygon.
     """
-    # Create a semicircle (180 degrees) centered at (0, 0)
-    ellipsoid = create_circle(start_angle=0, end_angle=180)
-    return ellipsoid
+    # Definições dos valores de alongamento/compressão e ângulos de rotação
+    stretch_factors = [0.75, 1.0, 1.5, 2.0]  # Fatores de alongamento/compressão
+    rotation_angles = [0, 15, 30, 45, 60, 75]  # Ângulos de rotação
+
+    # Criar um círculo inicial
+    circle = create_circle()
+
+    # Gerar todas as combinações de alongamento e rotação
+    for right_stretch in stretch_factors:
+        for left_stretch in stretch_factors:
+            # Aplicar alongamento nos dois lados
+            right_long = stretch_one_side(circle, "right", right_stretch)
+            left_long = stretch_one_side(right_long, "left", left_stretch)
+
+            # Caso normal: Aplicar rotações
+            for angle in rotation_angles:
+                rotated = rotate_shape(left_long, angle)
+                if left_stretch == 1.0 and right_stretch == 1.0 and angle != 0.0:
+                    pass
+                else:
+                    save_files(rotated, "ellipsoid", left_stretch, right_stretch, angle)
+
+    return rotated
+
+
+# ---------------------- Semicircles --------------------- #
+# Define the generate_ellipsoids function
+def generate_semicircles():
+    """
+    Generate a semicircle as a Shapely Polygon.
+
+    The semicircle is centered at (0, 0) with a radius of 1.0, and spans 180 degrees.
+
+    Returns:
+        Polygon: A Shapely Polygon object representing the semicircle.
+    """
+
+    # ---------------------------------------------------- #
+    # semicircle = create_circle(start_angle=90, end_angle=270)
+    # ---------------------------------------------------- #
+
+    # Definições dos valores de alongamento/compressão e ângulos de rotação
+    stretch_factors = [0.75, 1.0, 1.5, 2.0]  # Fatores de alongamento/compressão
+    rotation_angles = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180]
+    # Ângulos de rotação
+
+    # Criar um círculo inicial
+    semicircle = create_circle(start_angle=90, end_angle=270)
+
+    # Gerar todas as combinações de alongamento e rotação
+    for stretch in stretch_factors:
+
+        left_long = stretch_both_sides(semicircle, stretch)
+        # Caso normal: Aplicar rotações
+        for angle in rotation_angles:
+            rotated = rotate_shape(left_long, angle)
+            save_files(rotated, "semicircle", stretch, 0.0, angle)
+
+    return rotated
 
 
 # ----------------------- triangles ---------------------- #
@@ -181,15 +258,36 @@ def generate_triangles():
     Returns:
         Polygon: A Shapely Polygon object representing the triangle.
     """
-    triangle = create_triangle(
-        edge=2.0
-    )  # Create an equilateral triangle with edge length of 2.0
-    return triangle
+    # ---------------------------------------------------- #
+    # triangle = create_triangle(edge=2.0)
+    # Create an equilateral triangle with edge length of 2.0
+    # ---------------------------------------------------- #
+
+    stretch_factors = [0.75, 1.0, 1.5, 2.0]  # Fatores de alongamento/compressão
+    rotation_angles = [0, 10, 20, 30, 40, 50, 60, 75, 90, 105, 120]
+
+    # Criar um círculo inicial
+    triangle = create_triangle(edge=2.0)
+
+    # Gerar todas as combinações de alongamento e rotação
+    for right_stretch in stretch_factors:
+        for left_stretch in stretch_factors:
+            # Aplicar alongamento nos dois lados
+            right_long = stretch_one_side(triangle, "right", right_stretch)
+            left_long = stretch_one_side(right_long, "left", left_stretch)
+
+            # Caso normal: Aplicar rotações
+            for angle in rotation_angles:
+                rotated = rotate_shape(left_long, angle)
+
+                save_files(rotated, "triangle", left_stretch, right_stretch, angle)
+
+    return rotated
 
 
 # -------------------- quadrilaterals -------------------- #
 # Define the generate_quadrilaterals function
-def generate_quadrilaterals():
+def generate_quadrilaterals(rhombus=False):
     """
     Generate a square as a Shapely Polygon.
 
@@ -198,5 +296,39 @@ def generate_quadrilaterals():
     Returns:
         Polygon: A Shapely Polygon object representing the square.
     """
-    square = create_quadrilateral(edge=2.0)  # Create square
-    return square
+
+    stretch_factors = [0.75, 1.0, 1.5, 2.0]  # Fatores de alongamento/compressão
+    rotation_angles = [0, 15, 30, 45, 60, 75]
+
+    # ---------------------- square ---------------------- #
+    square = create_quadrilateral(edge=2.0)
+
+    for stretch in stretch_factors:
+        long = stretch_both_sides(square, stretch)
+
+        for angle in rotation_angles:
+            rotated = rotate_shape(long, angle)
+
+            save_files(rotated, "rectangle", stretch, stretch, angle)
+
+    # ---------------------- rhombus --------------------- #
+
+    rhombus = create_quadrilateral(vertices=[(0, 1), (-1, 0), (0, -1), (1, 0)])
+
+    for left_stretch in stretch_factors:
+        left_long = stretch_one_side(rhombus, "left", left_stretch)
+
+        for right_stretch in stretch_factors:
+            right_long = stretch_one_side(left_long, "right", right_stretch)
+
+            for angle in rotation_angles:
+                rotated = rotate_shape(right_long, angle)
+
+                if left_stretch == 1.0 and right_stretch == 1.0:
+                    pass
+                else:
+                    save_files(rotated, "rhombus", left_stretch, right_stretch, angle)
+                    # pass
+
+    # ---------------------------------------------------- #
+    return rotated

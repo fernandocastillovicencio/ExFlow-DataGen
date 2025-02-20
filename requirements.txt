@@ -3,3 +3,4 @@ opencv-python
 trimesh
 shapely
 scipy
+pillow
