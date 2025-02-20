@@ -82,59 +82,28 @@ ExFlow-DataGen/
 
 ---
 
-## How to Run the Project
+Modules
+1. Geometry (src/modules/geometry/)
+This module is responsible for creating, transforming, and saving geometric shapes in STL and PNG formats.
 
-### 1. Generate Obstacles (Images & STL)
-```bash
-python src/generate_obstacles.py
-```
+simples_shapes.py: Functions for generating simple shapes (circles, triangles, quadrilaterals).
+transform_utils.py: Functions for rotating and stretching shapes.
+shape_utils.py: Utility functions for saving shapes in STL and PNG formats.
+combined_shapes.py: Functions for generating combined geometric shapes.
+obstacles.py: Main script to generate and test obstacles.
+2. Meshing (src/modules/meshing/)
+Handles mesh generation using cfMesh for OpenFOAM simulations.
 
-### 2. Create Geometry in Salome
-```bash
-salome -t src/salome/generate_geometry.py
-```
+3. Solving (src/modules/solving/)
+Controls the execution of the OpenFOAM solver for external flow simulations.
 
-### 3. Merge Geometry Surfaces into a Unified STL
-```bash
-python src/combine_stl.py
-```
+4. Postprocessing (src/modules/postprocessing/)
+Processes simulation results for training deep learning models.
 
-### 4. Generate Mesh with cfMesh
-```bash
-python src/generate_mesh.py
-```
+Generating Obstacles
+To generate obstacles, run:
+PYTHONPATH=src python src/modules/geometry/obstacles.py
 
-### 5. Run CFD Simulation in OpenFOAM
-```bash
-python src/run_simulation.py
-```
-
-### 6. Post-process the Results
-```bash
-python src/process_results.py
-```
-
----
-
-### Cloning the Repository
-```bash
-git clone https://github.com/your-username/exflow-datagen.git
-cd exflow-datagen
-```
-
-### Creating a New Feature Branch
-```bash
-git checkout -b feature/new-feature
-```
-
-### Committing & Pushing Changes
-```bash
-git add .
-git commit -m "Description of the new feature"
-git push origin feature/new-feature
-```
-
----
 
 ## Installation and Execution
 

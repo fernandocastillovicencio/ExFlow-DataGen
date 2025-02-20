@@ -1,62 +1,59 @@
-"""
-Script to test individual geometry generation functions.
+import unittest
+from shapely.geometry import Polygon
+from modules.geometry.simples_shapes import create_circle, create_triangle, create_quadrilateral
+from modules.geometry.transform_utils import stretch_one_side, rotate_shape
+from modules.geometry.shape_utils import save_as_png, save_as_stl
+import os
 
-This script allows the user to test the generation of different geometric shapes
-by specifying the shape type as a command-line argument. The available shapes
-include ellipsoids, semicircles, and triangles. The script dynamically imports
-the necessary functions and executes them based on the user's input.
+class TestGeometryModules(unittest.TestCase):
 
-Usage:
-    python src/test_modules.py --test <shape>
+    def test_create_circle(self):
+        """Test if create_circle generates a valid Polygon"""
+        circle = create_circle()
+        self.assertIsInstance(circle, Polygon)
+        self.assertGreater(len(circle.exterior.coords), 10)  # Deve ter muitos pontos
 
-Available shapes:
-    - ellipsoid
-    - semicircle
-    - triangle
-    - quadrilateral
+    def test_create_triangle(self):
+        """Test if create_triangle generates a valid Polygon"""
+        triangle = create_triangle(edge=2.0)
+        self.assertIsInstance(triangle, Polygon)
+        self.assertEqual(len(triangle.exterior.coords), 4)  # Deve ter 3 pontos + 1 para fechamento
 
-The script prints a success message upon successful generation of the specified shape.
-"""
+    def test_create_quadrilateral(self):
+        """Test if create_quadrilateral generates a valid Polygon"""
+        quadrilateral = create_quadrilateral(edge=2.0)
+        self.assertIsInstance(quadrilateral, Polygon)
+        self.assertEqual(len(quadrilateral.exterior.coords), 5)  # 4 pontos + fechamento
 
-import argparse
+    def test_stretch_one_side(self):
+        """Test if stretching one side modifies the shape correctly"""
+        triangle = create_triangle(edge=2.0)
+        stretched = stretch_one_side(triangle, "right", 1.5)
+        self.assertIsInstance(stretched, Polygon)
+        self.assertNotEqual(triangle, stretched)  # A forma deve mudar
 
-# Dictionary to store available shape test functions
-# This dictionary will be populated with functions to generate different shapes
-TEST_FUNCTIONS = {}
+    def test_rotate_shape(self):
+        """Test if rotating a shape changes its orientation"""
+        triangle = create_triangle(edge=2.0)
+        rotated = rotate_shape(triangle, 45)
+        self.assertIsInstance(rotated, Polygon)
+        self.assertNotEqual(triangle, rotated)  # A rotação deve modificar a forma
 
+    def test_save_as_png(self):
+        """Test if the function saves PNG files correctly"""
+        circle = create_circle()
+        png_filename = "test_circle.png"
+        save_as_png(circle, png_filename)
+        self.assertTrue(os.path.exists(png_filename))
+        os.remove(png_filename)  # Remover o arquivo após o teste
 
-# ---------------------------------------------------------------------------- #
-try:
-    # Attempt to import the function to generate combined_circle_triangle
-    from modules.geometry.combined_circ_tri import generate_combined_circle_triangle
+    def test_save_as_stl(self):
+        """Test if the function saves STL files correctly"""
+        triangle = create_triangle(edge=2.0)
+        stl_filename = "test_triangle.stl"
+        save_as_stl(triangle, stl_filename)
+        self.assertTrue(os.path.exists(stl_filename))
+        os.remove(stl_filename)  # Remover o arquivo após o teste
 
-    # Add the quadrilaterals generation function to the dictionary
-    TEST_FUNCTIONS["combined_circ_tri"] = generate_combined_circle_triangle
-except ImportError as e:
-    # If the import fails, print a warning message with the error
-    print(f"Warning: Could not import 'generate_combined_circle_triangle'. Error: {e}")
-# ---------------------------------------------------------------------------- #
-
-# Create an ArgumentParser to handle command-line arguments
-parser = argparse.ArgumentParser(description="Test individual geometry modules")
-
-# Add a required argument to specify the shape to test
-parser.add_argument(
-    "--test",
-    type=str,
-    required=True,
-    help="Specify the shape to test (ellipsoid, semicircle, triangle, quadrilateral, etc.)",
-)
-
-# Parse the command-line arguments
-args = parser.parse_args()
-
-# Check if the requested shape test exists in the dictionary
-if args.test in TEST_FUNCTIONS:
-    # If the shape test exists, call the corresponding function
-    TEST_FUNCTIONS[args.test]()
-    # Print a success message with the shape that was generated
-    print(f"Test complete: {args.test} generated.")
-else:
-    # If the shape test does not exist, print an error message with available options
-    print("Invalid test option. Available:", ", ".join(TEST_FUNCTIONS.keys()))
+if __name__ == "__main__":
+    unittest.main()
