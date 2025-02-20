@@ -37,7 +37,7 @@ def generate_obstacles():
     categories = {
         "simple": [
             ("ellipsoid", generate_ellipsoids),  # Simple shape: ellipsoid
-            ("semicircle", generate_semicircles),  # Simple shape: semicircles
+            ("semicircle", generate_semicircles),  # Simple shape: semicircle
             ("triangle", generate_triangles),  # Simple shape: triangle
             ("quadrilateral", generate_quadrilaterals),  # Simple shape: quadrilateral
         ],
@@ -60,7 +60,7 @@ def generate_obstacles():
     # Loop through categories and subcategories
     for category, subcategories in categories.items():
         for shape_name, generation in subcategories:
-            shape = generation()  # Generate shape
+            generation()  # Generate shape
 
 
 # Direct script execution

@@ -101,11 +101,6 @@ def merge_shapes(geometry1, geometry2):
 
 
 # -------------------------------------------------------- #
-#                        SAVE AS PNG                       #
-# -------------------------------------------------------- #
-
-
-# -------------------------------------------------------- #
 #                     GENERATE FILENAME                    #
 # -------------------------------------------------------- #
 
@@ -119,7 +114,19 @@ os.makedirs(PNG_DIR, exist_ok=True)
 
 
 def save_files(shape, label, left_stretch, right_stretch, angle):
+    """
+    Save the shape as STL and PNG files with a generated filename.
 
+    Parameters:
+        shape (Polygon): The shape to be saved.
+        label (str): The label for the shape.
+        left_stretch (float): The left stretch factor.
+        right_stretch (float): The right stretch factor.
+        angle (float): The rotation angle.
+
+    Returns:
+        None
+    """
     name = f"{label}_lstretch{int(left_stretch*100):03d}_rstretch{int(right_stretch*100):03d}_rot{int(angle):03d}"
 
     stl_name = os.path.join(STL_DIR, f"{name}" + ".stl")
@@ -140,11 +147,21 @@ from shapely.geometry import Polygon
 
 
 def save_as_png(polygon_object, png_name):
-    # Obter as coordenadas do polígono
-    x, y = polygon_object.exterior.xy
-    coords = list(zip(x, y))  # Criar lista de coordenadas (x, y)
+    """
+    Save the polygon as a black-and-white PNG image.
 
-    # Calcular os limites do polígono (bounding box)
+    Parameters:
+        polygon_object (Polygon): The polygon to be saved.
+        png_name (str): The name of the output PNG file.
+
+    Returns:
+        None
+    """
+    # Get the coordinates of the polygon
+    x, y = polygon_object.exterior.xy
+    coords = list(zip(x, y))  # Create a list of (x, y) coordinates
+
+    # Calculate the bounding box of the polygon
     min_x = min(coord[0] for coord in coords)
     max_x = max(coord[0] for coord in coords)
     min_y = min(coord[1] for coord in coords)
@@ -153,19 +170,19 @@ def save_as_png(polygon_object, png_name):
     width = max_x - min_x
     height = max_y - min_y
 
-    # Calcular o tamanho da imagem com base nos limites (1.1 vezes width e height)
-    img_width = int(1.2 * width * 100)  # Aumenta 10% para dar margem
+    # Calculate the image size based on the bounding box (1.2 times width and height)
+    img_width = int(1.2 * width * 100)  # Increase by 20% to add margin
     img_height = int(1.2 * height * 100)
 
-    # Criar uma imagem em branco
+    # Create a blank image
     img = Image.new("RGB", (img_width, img_height), color="white")
     draw = ImageDraw.Draw(img)
 
-    # Calcular o centroide do polígono
+    # Calculate the centroid of the polygon
     centroid_x, centroid_y = polygon_object.centroid.x, polygon_object.centroid.y
 
-    # Ajustar as coordenadas do polígono para caber na imagem com a escala
-    scale = 100  # Fator de escala para ajustar o polígono à imagem
+    # Adjust the polygon coordinates to fit the image with scaling
+    scale = 100  # Scaling factor to fit the polygon to the image
     scaled_coords = [
         (
             int((x - (min_x + max_x) / 2) * scale + img_width / 2),
@@ -174,10 +191,10 @@ def save_as_png(polygon_object, png_name):
         for x, y in coords
     ]
 
-    # Desenhar o polígono centralizado
+    # Draw the polygon centered
     draw.polygon(scaled_coords, fill="black")
 
-    # Salvar a imagem como PNG
+    # Save the image as PNG
     img.save(png_name)
 
-    print(f"Imagem salva: {png_name}")
+    print(f"Image saved: {png_name}")

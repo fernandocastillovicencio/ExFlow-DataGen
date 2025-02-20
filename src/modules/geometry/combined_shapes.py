@@ -12,14 +12,11 @@ from modules.geometry.simples_shapes import (
     create_quadrilateral,  # Import create_quadrilateral function
 )
 
-
 # Define tolerance value
 tol = 1e-6
 
 
-# -------------------------------------------------------- #
-#                      STARTING SHAPES                     #
-# -------------------------------------------------------- #
+# ---------------------- STARTING SHAPES ---------------------- #
 # Define the create_starting_shape function
 def create_starting_shape(shape="semicircle", side="left"):
     """
@@ -37,7 +34,6 @@ def create_starting_shape(shape="semicircle", side="left"):
     Polygon
         The generated shape as a Shapely Polygon object.
     """
-
     # Check if shape is circle
     if shape == "circle":
         if side == "left":
@@ -88,15 +84,18 @@ def create_starting_shape(shape="semicircle", side="left"):
     return shape
 
 
-# -------------------------------------------------------- #
-#                        GENERATING                        #
-# -------------------------------------------------------- #
+# ---------------------- GENERATING ---------------------- #
 # Define the generate_combined_circle_triangle function
 def generate_combined_circle_triangle():
     """
     Generate a combined shape consisting of a circle and a triangle.
 
     The circle is on the left side, and the triangle is on the right side.
+
+    The function generates a combination of both shapes with different stretch factors
+    and rotation angles, and saves the resulting shapes as STL and PNG files.
+
+    The function returns the last generated shape as a Shapely Polygon object.
 
     Returns:
         Polygon: The combined shape.
@@ -106,7 +105,7 @@ def generate_combined_circle_triangle():
 
     order = [(shape1, shape2, "1"), (shape2, shape1, "2")]
 
-    stretch_factors = [0.75, 1.0, 1.5, 2.0]  # Fatores de alongamento/compressão
+    stretch_factors = [0.75, 1.0, 1.5, 2.0]  # Stretch/compression factors
     rotation_angles = [0, 15, 30, 45, 60, 75]
 
     for i in range(2):
@@ -118,11 +117,11 @@ def generate_combined_circle_triangle():
         for right_stretch in stretch_factors:
             right_long = stretch_one_side(right_shape, "right", right_stretch)
             for left_stretch in stretch_factors:
-                # Aplicar alongamento nos dois lados
+                # Apply stretch on both sides
                 left_long = stretch_one_side(left_shape, "left", left_stretch)
 
                 combined = merge_shapes(left_long, right_long)
-                # Caso normal: Aplicar rotações
+                # Normal case: Apply rotations
                 for angle in rotation_angles:
                     rotated = rotate_shape(combined, angle)
                     save_files(
@@ -150,7 +149,7 @@ def generate_combined_circle_square():
 
     order = [(shape1, shape2, "1"), (shape2, shape1, "2")]
 
-    stretch_factors = [0.75, 1.0, 1.5, 2.0]  # Fatores de alongamento/compressão
+    stretch_factors = [0.75, 1.0, 1.5, 2.0]  # Stretch/compression factors
     rotation_angles = [0, 15, 30, 45, 60, 75]
 
     for i in range(2):
@@ -162,11 +161,11 @@ def generate_combined_circle_square():
         for right_stretch in stretch_factors:
             right_long = stretch_one_side(right_shape, "right", right_stretch)
             for left_stretch in stretch_factors:
-                # Aplicar alongamento nos dois lados
+                # Apply stretch on both sides
                 left_long = stretch_one_side(left_shape, "left", left_stretch)
 
                 combined = merge_shapes(left_long, right_long)
-                # Caso normal: Aplicar rotações
+                # Normal case: Apply rotations
                 for angle in rotation_angles:
                     rotated = rotate_shape(combined, angle)
                     save_files(
@@ -194,7 +193,7 @@ def generate_combined_triangle_square():
 
     order = [(shape1, shape2, "1"), (shape2, shape1, "2")]
 
-    stretch_factors = [0.75, 1.0, 1.5, 2.0]  # Fatores de alongamento/compressão
+    stretch_factors = [0.75, 1.0, 1.5, 2.0]  # Stretch/compression factors
     rotation_angles = [0, 15, 30, 45, 60, 75]
 
     for i in range(2):
@@ -206,11 +205,11 @@ def generate_combined_triangle_square():
         for right_stretch in stretch_factors:
             right_long = stretch_one_side(right_shape, "right", right_stretch)
             for left_stretch in stretch_factors:
-                # Aplicar alongamento nos dois lados
+                # Apply stretch on both sides
                 left_long = stretch_one_side(left_shape, "left", left_stretch)
 
                 combined = merge_shapes(left_long, right_long)
-                # Caso normal: Aplicar rotações
+                # Normal case: Apply rotations
                 for angle in rotation_angles:
                     rotated = rotate_shape(combined, angle)
                     save_files(
