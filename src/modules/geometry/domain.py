@@ -5,7 +5,7 @@ from stl import mesh
 
 def create_2d_rectangle(width=4, height=4):
     """
-    Cria um retângulo simples.
+    Cria um retângulo simplesaa.
     """
     return Polygon(
         [
