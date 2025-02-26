@@ -61,9 +61,9 @@ makedir(basedir)
 # -------------------------------------------------------- #
 #                        CREATE BOX                        #
 # -------------------------------------------------------- #
-width = 0.26
-height = 0.06
-depth = 0.01
+width = 0.260
+height = 0.060
+depth = 0.010
 
 
 def create_box(xmin=-0.060, xmax=0.200, ymin=-0.060, ymax=0.060, dz=0.01):
@@ -804,7 +804,13 @@ def combined_shapes():
                         # # ------------------------------------------------ #
                         # #                      EXPORT                      #
                         # # ------------------------------------------------ #
-                        name = f"{prefix}_ldef{int(kr*100):03d}_rdef{int(kl*100):03d}_rot{int(t):03d}"
+                        if side1 == "left":
+                            f1 = kl
+                            f2 = kr
+                        else:
+                            f1 = kr
+                            f2 = kl
+                        name = f"{prefix}_ldef{int(f1*100):03d}_rdef{int(f2*100):03d}_rot{int(t):03d}"
                         geomdir = basedir + f"/geom_{name}"
                         makedir(geomdir)
                         geompy.ExportSTL(

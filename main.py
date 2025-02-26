@@ -1,11 +1,18 @@
 import os
 import shutil
 
+from modules.cfmesh4meshing.meshing import meshing
 
-def remove_conteudo_pasta(pasta):
-    if os.path.exists(pasta):  # Check if the directory exists
-        for f in os.listdir(pasta):
-            file_path = os.path.join(pasta, f)  # Get full path of the file/folder
+# -------------------------------------------------------- #
+#                         FUNCTIONS                        #
+# -------------------------------------------------------- #
+BASE_DIR = os.getcwd()
+
+
+def remove_folder_content(folder):
+    if os.path.exists(folder):  # Check if the directory exists
+        for f in os.listdir(folder):
+            file_path = os.path.join(folder, f)  # Get full path of the file/folder
 
             if os.path.isdir(file_path):  # Check if it's a directory
                 shutil.rmtree(file_path)  # Remove the directory and its contents
@@ -14,12 +21,24 @@ def remove_conteudo_pasta(pasta):
             else:
                 print(f"Skipping non-file and non-directory: {file_path}")
     else:
-        print(f"Directory '{pasta}' not found.")
+        print(f"Directory '{folder}' not found.")
 
 
-remove_conteudo_pasta("geometries/domain")
-remove_conteudo_pasta("geometries/merged")
+# -------------------------------------------------------- #
+#                         GEOMETRY                         #
+# -------------------------------------------------------- #
+# remove_folder_content("geometries/domain")
+# remove_folder_content("geometries/merged")
+# os.system("PYTHONPATH=src salome -t src/modules/geometry/domain.py")
 
+# -------------------------------------------------------- #
+#                          MESHING                         #
+# -------------------------------------------------------- #
+# remove_folder_content("meshes/")
+# remove_folder_content("cases/")
+meshing()
 
-os.system("PYTHONPATH=src salome -t src/modules/geometry/domain.py")
-os.system("salome killall")
+# -------------------------------------------------------- #
+#                         FINISHING                        #
+# -------------------------------------------------------- #
+# os.system("salome killall")

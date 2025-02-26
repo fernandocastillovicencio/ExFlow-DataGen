@@ -16,6 +16,7 @@ __pycache__/
 *.pyo
 *.pyd
 
+
 # Ignore OpenFOAM auto-generated files
 cases/cases_run/*/processor*/  
 cases/cases_run/*/log.*
@@ -35,3 +36,34 @@ doc/
 *.png
 *.stl
 progress.md
+
+
+
+
+# Openfoam
+# Ignorar tudo dentro das pastas meshes e cases
+meshes/*
+cases/*
+
+# Exceto arquivos de configuração ou scripts (caso necessário)
+!meshes/**/*.stl
+!cases/**/*.cfg
+!cases/**/*.py
+
+# Ignorar arquivos típicos do OpenFOAM
+**/0/*
+**/constant/polyMesh/*
+**/processor*/**
+**/system/*
+**/dynamicCode/*
+**/postProcessing/*
+**/logs/*
+**/*.OpenFOAM
+**/*.foam
+**/*.vtk
+**/*.vtu
+**/*.log
+**/*.dat
+**/*.bin
+**/*.obj
+**/*.case
