@@ -67,3 +67,4 @@ cases/*
 **/*.bin
 **/*.obj
 **/*.case
+**/log.*

@@ -39,4 +39,4 @@ def meshing():
 
 
 # Call the meshing function to start the process
-meshing()
+# meshing()

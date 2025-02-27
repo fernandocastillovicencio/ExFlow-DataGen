@@ -1,7 +1,8 @@
 import os
 import shutil
 
-from modules.cfmesh4meshing.meshing import meshing
+from modules.meshing.cfmesh4meshing import meshing
+from modules.solving.run_simulation import execute_cases
 
 # -------------------------------------------------------- #
 #                         FUNCTIONS                        #
@@ -37,7 +38,7 @@ def remove_folder_content(folder):
 # remove_folder_content("meshes/")
 # remove_folder_content("cases/")
 meshing()
-
+execute_cases()
 # -------------------------------------------------------- #
 #                         FINISHING                        #
 # -------------------------------------------------------- #
