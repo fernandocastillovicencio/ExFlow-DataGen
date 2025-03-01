@@ -4,6 +4,9 @@ cases/geometries/
 # Ignore all generated OpenFOAM cases
 cases/cases_run/
 
+processed_data/
+
+
 # Ignore logs and temporary files
 logs/
 *.log
@@ -68,3 +71,5 @@ cases/*
 **/*.obj
 **/*.case
 **/log.*
+**/*.pkl
+

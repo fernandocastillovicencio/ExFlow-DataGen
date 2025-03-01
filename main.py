@@ -25,19 +25,19 @@ def remove_folder_content(folder):
         print(f"Directory '{folder}' not found.")
 
 
-# -------------------------------------------------------- #
-#                         GEOMETRY                         #
-# -------------------------------------------------------- #
+# # -------------------------------------------------------- #
+# #                         GEOMETRY                         #
+# # -------------------------------------------------------- #
 # remove_folder_content("geometries/domain")
 # remove_folder_content("geometries/merged")
 # os.system("PYTHONPATH=src salome -t src/modules/geometry/domain.py")
 
-# -------------------------------------------------------- #
-#                          MESHING                         #
-# -------------------------------------------------------- #
+# # -------------------------------------------------------- #
+# #                          MESHING                         #
+# # -------------------------------------------------------- #
 # remove_folder_content("meshes/")
 # remove_folder_content("cases/")
-meshing()
+# meshing()
 execute_cases()
 # -------------------------------------------------------- #
 #                         FINISHING                        #

@@ -323,7 +323,7 @@ def semicircle():
             xmin, xmax, ymin, ymax, _, _ = geompy.BoundingBox(wire_centered)
             dx = xmax - xmin
             dy = ymax - ymin
-            scale = max(0.02 / dx, 0.02 / dy)
+            scale = min(0.02 / dx, 0.02 / dy)
             wire_scaled = geompy.MakeScaleTransform(wire_centered, O, scale)
 
             # ------------------------------------------------ #
@@ -392,7 +392,7 @@ def ellipsoid():
                 xmin, xmax, ymin, ymax, _, _ = geompy.BoundingBox(wire_centered)
                 dx = xmax - xmin
                 dy = ymax - ymin
-                scale = max(0.02 / dx, 0.02 / dy)
+                scale = min(0.02 / dx, 0.02 / dy)
                 wire_scaled = geompy.MakeScaleTransform(wire_centered, O, scale)
 
                 #     # # -------------------- saving -------------------- #
@@ -465,7 +465,7 @@ def triangle():
                 xmin, xmax, ymin, ymax, _, _ = geompy.BoundingBox(wire_centered)
                 dx = xmax - xmin
                 dy = ymax - ymin
-                scale = max(0.02 / dx, 0.02 / dy)
+                scale = min(0.02 / dx, 0.02 / dy)
                 wire_scaled = geompy.MakeScaleTransform(wire_centered, O, scale)
 
                 #     # # -------------------- saving -------------------- #
@@ -531,7 +531,7 @@ def rectangle():
             xmin, xmax, ymin, ymax, _, _ = geompy.BoundingBox(wire_centered)
             dx = xmax - xmin
             dy = ymax - ymin
-            scale = max(0.02 / dx, 0.02 / dy)
+            scale = min(0.02 / dx, 0.02 / dy)
             wire_scaled = geompy.MakeScaleTransform(wire_centered, O, scale)
 
             # ------------------------------------------------ #
@@ -600,7 +600,7 @@ def rhombus():
                 xmin, xmax, ymin, ymax, _, _ = geompy.BoundingBox(wire_centered)
                 dx = xmax - xmin
                 dy = ymax - ymin
-                scale = max(0.02 / dx, 0.02 / dy)
+                scale = min(0.02 / dx, 0.02 / dy)
                 wire_scaled = geompy.MakeScaleTransform(wire_centered, O, scale)
 
                 #     # # -------------------- saving -------------------- #
@@ -673,7 +673,7 @@ def parallelogram():
                 xmin, xmax, ymin, ymax, _, _ = geompy.BoundingBox(wire_centered)
                 dx = xmax - xmin
                 dy = ymax - ymin
-                scale = max(0.02 / dx, 0.02 / dy)
+                scale = min(0.02 / dx, 0.02 / dy)
                 wire_scaled = geompy.MakeScaleTransform(wire_centered, O, scale)
 
                 #     # # -------------------- saving -------------------- #
