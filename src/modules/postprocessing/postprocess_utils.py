@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
 from shapely.geometry import Polygon, Point  # Corrigindo a importação de Point
 
-def list_cases(cases_dir, max_cases=None):
-    """Lista as pastas de casos dentro do diretório `cases_dir`."""
-    cases = sorted([os.path.join(cases_dir, case) for case in os.listdir(cases_dir) if os.path.isdir(os.path.join(cases_dir, case))])
-    return cases[:max_cases] if max_cases else cases
+def list_cases(cases_dir):
+    cases = sorted([os.path.join(cases_dir, d) for d in os.listdir(cases_dir) if os.path.isdir(os.path.join(cases_dir, d))])
+    print(f"🔍 {len(cases)} casos encontrados para processamento: {cases}")
+    return cases  # 🔹 Agora processará todas as pastas
 
 def run_foamToVTK(case_path):
     """Executa o comando foamToVTK no caso especificado."""
@@ -90,14 +90,12 @@ def save_image(post_case_dir, grid_x, grid_y, field_data, field_name):
     print(f"✅ Imagem salva em: {plot_filename}")
 
 
-
 def prepare_post_dir(case):
     """Prepara o diretório para o pós-processamento, criando os links simbólicos para VTK."""
     # Definir o diretório de pós-processamento
-    post_case_dir = os.path.join("postprocesses", f"post_{os.path.basename(case)}")
+    post_case_dir = os.path.join("postprocesses", os.path.basename(case))
+    os.makedirs(post_case_dir, exist_ok=True)  # 🔹 Sempre cria a pasta se não existir
     
-    # Cria o diretório principal de pós-processamento
-    os.makedirs(post_case_dir, exist_ok=True)
     print(f"📂 Diretório de pós-processamento configurado: {post_case_dir}")
 
     # Criar link simbólico para a pasta VTK
@@ -109,3 +107,4 @@ def prepare_post_dir(case):
     
     os.symlink(os.path.abspath(vtk_source), vtk_target)  # Cria o link simbólico
     print(f"🔗 Link simbólico criado: {vtk_target} -> {vtk_source}")
+    return post_case_dir

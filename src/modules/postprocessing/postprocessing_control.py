@@ -213,17 +213,27 @@ def postprocessing_control():
     cases_dir = os.path.join(os.getcwd(), "cases")
     print(f"📂 Iniciando o pós-processamento no diretório: {cases_dir}")
 
+    # Criar a pasta principal de pós-processamento antes de tudo
+    postprocesses_dir = os.path.join(os.getcwd(), "postprocesses")
+    os.makedirs(postprocesses_dir, exist_ok=True)
+
+    # Criar a pasta processed_data dentro de postprocesses/
+    processed_data_dir = os.path.join(postprocesses_dir, "processed_data")
+    os.makedirs(processed_data_dir, exist_ok=True)
+
+    print(f"📁 Pastas 'postprocesses/' e 'postprocesses/processed_data/' criadas ou já existentes.")
+
+    
+    
     # Step 1: List cases
-    cases = list_cases(cases_dir, max_cases=2)
-    print(f"🔍 Casos listados: {cases}")
+    cases = list_cases(cases_dir)
+    print(f"🔍 {len(cases)} casos encontrados para processamento.")
 
     # Step 1.1: Rodar foamToVTK se necessário
     for case in cases:
         print(f"🔄 Verificando e rodando foamToVTK para o caso: {case}")
         run_foamToVTK(case)  # Executa foamToVTK para cada caso
 
-    # Step 2: Process each case
-    for case in cases:
         print(f"⚙ Preparando diretórios e processando o caso: {case}")
 
         # Step 2.1: Prepare directory and symbolic link for VTK
