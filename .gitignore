@@ -72,4 +72,4 @@ cases/*
 **/*.case
 **/log.*
 **/*.pkl
-
+**/*.npy

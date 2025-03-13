@@ -1,73 +1,41 @@
 import os
 import numpy as np
-import multiprocessing
-from modules.postprocessing.convert_to_vtk import convert_to_vtk
 from modules.postprocessing.extract_fields import extract_fields
-from modules.postprocessing.interpolate_fields import interpolate_fields
-from modules.postprocessing.generate_dataX import compute_SDF, compute_flow_region
+from modules.postprocessing.interpolate_fields import interpolate_rbf
+
+# 🔹 Definir a nova malha estruturada
+grid_x = np.linspace(-0.060, 0.200, 179)  # 179 pontos no eixo X
+grid_y = np.linspace(-0.060, 0.060, 72)  # 72 pontos no eixo Y
 
 
-def process_case(case):
+def process_case(case_dir):
     """
-    Processa um único caso e salva os arquivos intermediários `.npy` na pasta `processed/`.
+    Processa um caso individual, extraindo os campos e aplicando interpolação RBF.
 
     Args:
-        case (str): Caminho para a pasta do caso.
+        case_dir (str): Caminho para o diretório do caso CFD.
     """
-    vtk_folder = convert_to_vtk(case)
-    if vtk_folder:
-        # Criar pasta `processed/`
-        processed_dir = os.path.join(case, "processed")
-        os.makedirs(processed_dir, exist_ok=True)
+    vtk_folder = os.path.join(case_dir, "VTK")
 
-        # Definir grade
-        grid_x = np.linspace(-0.060, 0.200, 172)
-        grid_y = np.linspace(-0.060, 0.060, 79)
+    # Verificar se os arquivos VTK existem
+    if not os.path.exists(vtk_folder):
+        print(f"❌ Arquivos VTK não encontrados em {case_dir}")
+        return
 
-        # Extrair e processar os dados
-        points, Ux, Uy, p = extract_fields(vtk_folder)
-        Ux_grid, Uy_grid, p_grid = interpolate_fields(points, Ux, Uy, p, grid_x, grid_y)
-        sdf1 = compute_SDF(points, grid_x, grid_y)
-        flow_region = compute_flow_region(sdf1)
+    # Extrair pontos e campos CFD
+    points, Ux, Uy, p = extract_fields(vtk_folder)
 
-        # Salvar os arquivos `.npy`
-        np.save(
-            os.path.join(processed_dir, "dataY.npy"),
-            np.stack([Ux_grid, Uy_grid, p_grid], axis=0),
-        )
-        np.save(
-            os.path.join(processed_dir, "dataX.npy"),
-            np.stack([sdf1, flow_region, sdf1], axis=0),
-        )
+    # Aplicar interpolação RBF para cada variável
+    Ux_interp = interpolate_rbf(points, Ux, grid_x, grid_y)
+    Uy_interp = interpolate_rbf(points, Uy, grid_x, grid_y)
+    p_interp = interpolate_rbf(points, p, grid_x, grid_y)
 
-        print(f"✅ Processamento concluído para {case}")
+    # Salvar os dados interpolados
+    processed_dir = os.path.join(case_dir, "processed")
+    os.makedirs(processed_dir, exist_ok=True)
 
+    np.save(os.path.join(processed_dir, "Ux_interp.npy"), Ux_interp)
+    np.save(os.path.join(processed_dir, "Uy_interp.npy"), Uy_interp)
+    np.save(os.path.join(processed_dir, "p_interp.npy"), p_interp)
 
-def process_all_cases_parallel(cases_dir, num_workers=4):
-    """
-    Processa todas as pastas `case_*` em paralelo.
-
-    Args:
-        cases_dir (str): Diretório contendo os casos.
-        num_workers (int): Número de processos em paralelo.
-    """
-    cases = [
-        os.path.join(cases_dir, d)
-        for d in os.listdir(cases_dir)
-        if d.startswith("case")
-    ]
-
-    print(f"🔄 Iniciando processamento paralelo para {len(cases)} casos...")
-
-    with multiprocessing.Pool(num_workers) as pool:
-        pool.map(process_case, cases)
-
-    print(
-        "✅ Todos os casos foram processados e arquivos intermediários foram gerados!"
-    )
-
-
-if __name__ == "__main__":
-    process_all_cases_parallel(
-        "cases/", num_workers=8
-    )  # Definir número de núcleos da CPU
+    print(f"✅ Interpolação concluída e salva em {processed_dir}")

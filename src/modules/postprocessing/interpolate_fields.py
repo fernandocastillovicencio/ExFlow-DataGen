@@ -1,25 +1,36 @@
-from scipy.interpolate import griddata
+from scipy.spatial import cKDTree
 import numpy as np
 
 
-def interpolate_fields(points, Ux, Uy, p, grid_x, grid_y):
+def interpolate_idw(points, values, grid_x, grid_y, power=2):
     """
-    Interpola os campos de velocidade e pressão para a grade `(172, 79)`.
+    Interpola os valores CFD usando Inverse Distance Weighting (IDW).
+
+    - Mantém propriedades físicas do fluxo
+    - Melhor preservação de gradientes do que RBF
+    - Muito mais rápido para grandes conjuntos de dados
 
     Args:
-        points (array): Coordenadas X e Y.
-        Ux (array): Velocidade em X.
-        Uy (array): Velocidade em Y.
-        p (array): Pressão.
-        grid_x (array): Malha X.
-        grid_y (array): Malha Y.
+        points (array): Coordenadas (X, Y) dos pontos CFD originais.
+        values (array): Valores CFD (Ux, Uy ou p).
+        grid_x (array): Posições X da malha uniforme (179 pontos).
+        grid_y (array): Posições Y da malha uniforme (72 pontos).
+        power (int): Peso da distância (default = 2).
 
     Returns:
-        tuple: Arrays interpolados para Ux, Uy e p.
+        array: Dados interpolados na malha (179x72).
     """
-    X, Y = np.meshgrid(grid_x, grid_y)
-    Ux_grid = griddata(points, Ux, (X, Y), method="nearest")
-    Uy_grid = griddata(points, Uy, (X, Y), method="nearest")
-    p_grid = griddata(points, p, (X, Y), method="nearest")
+    tree = cKDTree(points)
+    grid = np.array(np.meshgrid(grid_x, grid_y)).T.reshape(-1, 2)
 
-    return Ux_grid.T, Uy_grid.T, p_grid.T  # Transpor para (172, 79)
+    # Encontrar os 4 vizinhos mais próximos
+    dists, idxs = tree.query(grid, k=4)
+
+    # Calcular pesos inversos das distâncias
+    weights = 1.0 / (dists**power)
+    weights /= np.sum(weights, axis=1, keepdims=True)
+
+    # Aplicar interpolação ponderada
+    interpolated_values = np.sum(weights * values[idxs], axis=1)
+
+    return interpolated_values.reshape(len(grid_x), len(grid_y)).T
