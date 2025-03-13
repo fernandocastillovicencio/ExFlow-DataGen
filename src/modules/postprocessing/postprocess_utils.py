@@ -55,7 +55,7 @@ def save_npy(post_case_dir, grid_x, grid_y, p, Ux, Uy):
     data_dir = os.path.join(post_case_dir, "data")
     os.makedirs(data_dir, exist_ok=True)
 
-    npy_file = os.path.join(data_dir, "processed_data.npy")
+    npy_file = os.path.join(data_dir, "dataY.npy")
     np.save(npy_file, {'x': grid_x, 'y': grid_y, 'p': p, 'Ux': Ux, 'Uy': Uy})
     print(f"✅ Dados salvos no arquivo: {npy_file}")
 

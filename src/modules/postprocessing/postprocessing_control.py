@@ -1,9 +1,19 @@
 import os
+import numpy as np
+# Import das funções gerais
+from modules.postprocessing.postprocess_utils import list_cases
+
+# Import das funções para gerar Y
 from modules.postprocessing.postprocess_utils import (
-    list_cases, run_foamToVTK, load_vtu_data,
-    create_fixed_grid, interpolate_data, apply_obstacle_mask, save_npy, save_image
+    run_foamToVTK, load_vtu_data, create_fixed_grid,
+    interpolate_data, apply_obstacle_mask, save_npy, save_image
 )
 from modules.postprocessing.obstacle_processing import get_obstacle_polygon
+
+# Import das funções para gerar X
+from modules.postprocessing.sdf1_generation import generate_sdf1, save_sdf1_image
+from modules.postprocessing.flow_region_generation import generate_flow_region, save_flow_region_image
+from modules.postprocessing.sdf2_generation import generate_sdf2, save_sdf2_image
 
 def prepare_case_directory(case):
     """Cria o diretório de pós-processamento e o link simbólico para a pasta VTK"""
@@ -59,6 +69,53 @@ def save_results(post_case_dir, grid_x, grid_y, p_interpolated, Ux_interpolated,
     save_image(post_case_dir, grid_x, grid_y, Uy_interpolated, "Velocity_Y")
 
 
+
+
+def save_Ydata(case, post_case_dir):
+    # Step 2.2: Process the fields (VTU data, grid creation, interpolation)
+    p_interpolated, Ux_interpolated, Uy_interpolated, grid_x, grid_y = process_fields(case, post_case_dir)
+
+    # Step 2.3: Apply obstacle mask
+    p_corrected, Ux_corrected, Uy_corrected = apply_obstacle(case, p_interpolated, Ux_interpolated, Uy_interpolated, grid_x, grid_y)
+
+    # Step 2.4: Save results (npy and images)
+    save_results(post_case_dir, grid_x, grid_y, p_corrected, Ux_corrected, Uy_corrected)
+
+def save_Xdata(case, post_case_dir):
+    """
+    Gera e salva as três variáveis de entrada (SDF1, flow_region e SDF2).
+    """
+    # 1) Definir caminhos relevantes
+    vtu_file = os.path.join(case, "VTK", f"{os.path.basename(case)}_500", "internal.vtu")
+    obstacle_file = os.path.join(case, "VTK", f"{os.path.basename(case)}_500", "boundary", "wall.vtp")
+
+    # Diretórios corretos para salvar os arquivos
+    data_dir = os.path.join(post_case_dir, "data")
+    figures_dir = os.path.join(data_dir, "figures")
+
+    os.makedirs(data_dir, exist_ok=True)
+    os.makedirs(figures_dir, exist_ok=True)
+
+    # 2) Gerar SDF1
+    sdf1 = generate_sdf1(vtu_file, obstacle_file)
+    save_sdf1_image(sdf1, figures_dir)
+
+    # 3) Gerar flow_region
+    flow_region = generate_flow_region(vtu_file, obstacle_file)
+    save_flow_region_image(flow_region, figures_dir)
+
+    # 4) Gerar SDF2
+    sdf2 = generate_sdf2(vtu_file)
+    save_sdf2_image(sdf2, figures_dir)
+
+    # 5) Salvar os dados no arquivo .npy
+    output_file = os.path.join(data_dir, "dataX.npy")
+    np.save(output_file, {"sdf1": sdf1, "flow_region": flow_region, "sdf2": sdf2})
+
+    print(f"✅ Arquivo dataX.npy salvo em: {output_file}")
+    print(f"✅ Imagens salvas em: {figures_dir}")
+
+
 def postprocessing_control():
     cases_dir = os.path.join(os.getcwd(), "cases")
     print(f"📂 Iniciando o pós-processamento no diretório: {cases_dir}")
@@ -74,14 +131,17 @@ def postprocessing_control():
         # Step 2.1: Prepare directory and symbolic link for VTK
         post_case_dir = prepare_case_directory(case)
 
-        # Step 2.2: Process the fields (VTU data, grid creation, interpolation)
-        p_interpolated, Ux_interpolated, Uy_interpolated, grid_x, grid_y = process_fields(case, post_case_dir)
 
-        # Step 2.3: Apply obstacle mask
-        p_interpolated, Ux_interpolated, Uy_interpolated = apply_obstacle(case, p_interpolated, Ux_interpolated, Uy_interpolated, grid_x, grid_y)
+        # Step 2.2: Save Y-data
+        save_Ydata(case, post_case_dir)
 
-        # Step 2.4: Save results (npy and images)
-        save_results(post_case_dir, grid_x, grid_y, p_interpolated, Ux_interpolated, Uy_interpolated)
+        # Step 2.3: Save X-data
+        save_Xdata(case, post_case_dir)
+        
+        # Step 2.4: Save overall data
+
+
+
 
 
 if __name__ == "__main__":
