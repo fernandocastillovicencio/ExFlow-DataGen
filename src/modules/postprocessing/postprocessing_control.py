@@ -209,6 +209,24 @@ def save_overall_data(cases):
 
 
 
+import multiprocessing
+
+def process_single_case(case):
+    """Processa um único caso: cria as pastas, processa os dados e salva os resultados."""
+    print(f"🔄 Verificando e rodando foamToVTK para o caso: {case}")
+    run_foamToVTK(case)  # Executa foamToVTK para cada caso
+
+    print(f"⚙ Preparando diretórios e processando o caso: {case}")
+
+    # Passo 1: Preparar diretório e link simbólico para VTK
+    post_case_dir = prepare_case_directory(case)
+
+    # Passo 2: Salvar dados Y e X
+    save_Ydata(case, post_case_dir)
+    save_Xdata(case, post_case_dir)
+
+    print(f"✅ Processamento do caso {case} concluído.")
+
 def postprocessing_control():
     cases_dir = os.path.join(os.getcwd(), "cases")
     print(f"📂 Iniciando o pós-processamento no diretório: {cases_dir}")
@@ -223,29 +241,16 @@ def postprocessing_control():
 
     print(f"📁 Pastas 'postprocesses/' e 'postprocesses/processed_data/' criadas ou já existentes.")
 
-    
-    
-    # Step 1: List cases
+    # Passo 1: Listar os casos
     cases = list_cases(cases_dir)
     print(f"🔍 {len(cases)} casos encontrados para processamento.")
 
-    # Step 1.1: Rodar foamToVTK se necessário
-    for case in cases:
-        print(f"🔄 Verificando e rodando foamToVTK para o caso: {case}")
-        run_foamToVTK(case)  # Executa foamToVTK para cada caso
+    # Passo 2: Rodar foamToVTK se necessário e preparar os casos em paralelo
+    print(f"🚀 Iniciando processamento paralelo para {len(cases)} casos...")
+    with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
+        pool.map(process_single_case, cases)  # Processa todos os casos em paralelo
 
-        print(f"⚙ Preparando diretórios e processando o caso: {case}")
-
-        # Step 2.1: Prepare directory and symbolic link for VTK
-        post_case_dir = prepare_case_directory(case)
-
-        # Step 2.2: Save Y-data
-        save_Ydata(case, post_case_dir)
-
-        # Step 2.3: Save X-data
-        save_Xdata(case, post_case_dir)
-
-    # Step 2.4: Save overall data (N, 3, 172, 79)
+    # Passo 3: Salvar os dados gerais (concatenar todos os casos)
     save_overall_data(cases)
 
 

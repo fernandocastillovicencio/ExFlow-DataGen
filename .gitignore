@@ -1,5 +1,6 @@
 **/*.symlink
 **/VTK
+postprocesses/
 
 # Ignore all generated STL files
 cases/geometries/
@@ -50,6 +51,7 @@ progress.md
 # Ignorar tudo dentro das pastas meshes e cases
 meshes/*
 cases/*
+postprocesses/*
 
 # Exceto arquivos de configuração ou scripts (caso necessário)
 !meshes/**/*.stl

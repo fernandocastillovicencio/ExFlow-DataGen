@@ -58,7 +58,7 @@ def save_npy(post_case_dir, grid_x, grid_y, p, Ux, Uy):
     os.makedirs(data_dir, exist_ok=True)
 
     # Reformatar para o formato (1, 3, 172, 79)
-    Y_data = np.stack([p, Ux, Uy], axis=0)  # Forma (3, 172, 79)
+    Y_data = np.stack([Ux, Uy, p], axis=0)  # Forma (3, 172, 79)
     Y_data = np.expand_dims(Y_data, axis=0)  # Forma final (1, 3, 172, 79)
 
     npy_file = os.path.join(data_dir, "dataY.npy")
