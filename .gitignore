@@ -1,3 +1,6 @@
+**/*.symlink
+**/VTK
+
 # Ignore all generated STL files
 cases/geometries/
 
