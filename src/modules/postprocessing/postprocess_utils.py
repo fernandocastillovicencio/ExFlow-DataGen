@@ -51,21 +51,33 @@ def apply_obstacle_mask(p, Ux, Uy, grid_x, grid_y, obstacle_polygon):
     return p, Ux, Uy
 
 def save_npy(post_case_dir, grid_x, grid_y, p, Ux, Uy):
-    """Salva os dados em post*/data/."""
+    """
+    Salva os dados de saída (p, Ux, Uy) no formato adequado para a rede neural.
+    """
     data_dir = os.path.join(post_case_dir, "data")
     os.makedirs(data_dir, exist_ok=True)
 
+    # Reformatar para o formato (1, 3, 172, 79)
+    Y_data = np.stack([p, Ux, Uy], axis=0)  # Forma (3, 172, 79)
+    Y_data = np.expand_dims(Y_data, axis=0)  # Forma final (1, 3, 172, 79)
+
     npy_file = os.path.join(data_dir, "dataY.npy")
-    np.save(npy_file, {'x': grid_x, 'y': grid_y, 'p': p, 'Ux': Ux, 'Uy': Uy})
-    print(f"✅ Dados salvos no arquivo: {npy_file}")
+    np.save(npy_file, Y_data)
+
+    print(f"✅ Arquivo dataY.npy salvo em: {npy_file} com formato {Y_data.shape}")
 
 def save_image(post_case_dir, grid_x, grid_y, field_data, field_name):
-    """Salva imagens em post*/data/figures/."""
+    """
+    Salva imagens em post*/data/figures/.
+    """
+    # Criar o diretório figures/ antes de salvar as imagens
     figures_dir = os.path.join(post_case_dir, "data", "figures")
-    os.makedirs(figures_dir, exist_ok=True)
+    os.makedirs(figures_dir, exist_ok=True)  # 🔹 GARANTIR QUE A PASTA EXISTA
 
+    # Definir caminho do arquivo de imagem
     plot_filename = os.path.join(figures_dir, f'{field_name}_172x79_from_npy.png')
-    
+
+    # Criar e salvar a imagem
     plt.figure(figsize=(8, 4))
     plt.contourf(grid_x, grid_y, field_data, levels=100, cmap='jet')
     plt.colorbar(label=field_name)
@@ -74,7 +86,10 @@ def save_image(post_case_dir, grid_x, grid_y, field_data, field_name):
     plt.title(f'Campo {field_name}')
     plt.savefig(plot_filename, dpi=300)
     plt.close()
+    
     print(f"✅ Imagem salva em: {plot_filename}")
+
+
 
 def prepare_post_dir(case):
     """Prepara o diretório para o pós-processamento, criando os links simbólicos para VTK."""

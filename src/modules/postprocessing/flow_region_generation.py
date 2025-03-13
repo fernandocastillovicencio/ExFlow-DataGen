@@ -38,20 +38,23 @@ def generate_flow_region(vtu_file, obstacle_file, grid_width=172, grid_height=79
     flow_region[0, :] = 2   # Superior
     flow_region[-1, :] = 2  # Inferior
 
-    return flow_region
+    return np.array(flow_region)
 
 def save_flow_region_image(flow_region, figures_dir):
     """
     Salva imagem da matriz flow_region em data/figures/.
     """
-    os.makedirs(figures_dir, exist_ok=True)
+    os.makedirs(figures_dir, exist_ok=True)  # 🔹 GARANTIR QUE A PASTA EXISTA
+
     plt.figure(figsize=(8, 6))
     plt.imshow(flow_region, cmap='jet', origin='lower', alpha=0.8)
     plt.colorbar(ticks=[0, 1, 2, 3, 4], label='Flow Region')
     plt.title('Flow Region')
     plt.xlabel('X')
     plt.ylabel('Y')
+
     plot_filename = os.path.join(figures_dir, 'flow_region_with_obstacle.png')
     plt.savefig(plot_filename, dpi=300)
     plt.close()
+    
     print(f"✅ Imagem Flow Region salva em: {plot_filename}")

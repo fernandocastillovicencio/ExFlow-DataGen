@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import pickle
 # Import das funções gerais
 from modules.postprocessing.postprocess_utils import list_cases
 
@@ -62,58 +63,150 @@ def apply_obstacle(case, p_interpolated, Ux_interpolated, Uy_interpolated, grid_
 
 def save_results(post_case_dir, grid_x, grid_y, p_interpolated, Ux_interpolated, Uy_interpolated):
     """Salva os resultados em .npy e imagens .png"""
+    
+    # Criar diretório "figures" antes de salvar imagens
+    figures_dir = os.path.join(post_case_dir, "data", "figures")
+    os.makedirs(figures_dir, exist_ok=True)  # 🔹 GARANTIR QUE O DIRETÓRIO EXISTA
+
     print(f"📂 Salvando dados e imagens para o caso: {post_case_dir}")
+
+    # Salvar os dados interpolados em .npy
     save_npy(post_case_dir, grid_x, grid_y, p_interpolated, Ux_interpolated, Uy_interpolated)
+
+    # Salvar imagens
     save_image(post_case_dir, grid_x, grid_y, p_interpolated, "Pressure")
     save_image(post_case_dir, grid_x, grid_y, Ux_interpolated, "Velocity_X")
     save_image(post_case_dir, grid_x, grid_y, Uy_interpolated, "Velocity_Y")
+
+    print(f"✅ Todas as imagens foram salvas em {figures_dir}")
+
 
 
 
 
 def save_Ydata(case, post_case_dir):
-    # Step 2.2: Process the fields (VTU data, grid creation, interpolation)
+    """
+    Gera e salva os dados de saída (P, Ux, Uy) no formato adequado para a rede neural.
+    """
+    # Criar o diretório "data" se ele não existir antes de salvar os arquivos
+    data_dir = os.path.join(post_case_dir, "data")
+    os.makedirs(data_dir, exist_ok=True)  # 🔹 GARANTIR QUE O DIRETÓRIO EXISTA
+
+    # Processar campos (VTU data, grid, interpolação)
     p_interpolated, Ux_interpolated, Uy_interpolated, grid_x, grid_y = process_fields(case, post_case_dir)
 
-    # Step 2.3: Apply obstacle mask
+    # Aplicar máscara do obstáculo
     p_corrected, Ux_corrected, Uy_corrected = apply_obstacle(case, p_interpolated, Ux_interpolated, Uy_interpolated, grid_x, grid_y)
 
-    # Step 2.4: Save results (npy and images)
-    save_results(post_case_dir, grid_x, grid_y, p_corrected, Ux_corrected, Uy_corrected)
+    # Reformatar para o formato (1, 3, 172, 79)
+    Y_data = np.stack([p_corrected, Ux_corrected, Uy_corrected], axis=0)  # Forma (3, 172, 79)
+    Y_data = np.expand_dims(Y_data, axis=0)  # Forma final (1, 3, 172, 79)
+
+    # Salvar em dataY.npy
+    output_file = os.path.join(data_dir, "dataY.npy")
+    np.save(output_file, Y_data)
+
+    print(f"✅ Arquivo dataY.npy salvo em: {output_file} com formato {Y_data.shape}")
+
+    # Salvar as imagens de p, Ux, Uy
+    figures_dir = os.path.join(data_dir, "figures")
+    os.makedirs(figures_dir, exist_ok=True)
+
+    save_image(post_case_dir, grid_x, grid_y, p_corrected, "Pressure")
+    save_image(post_case_dir, grid_x, grid_y, Ux_corrected, "Velocity_X")
+    save_image(post_case_dir, grid_x, grid_y, Uy_corrected, "Velocity_Y")
+
+
+
 
 def save_Xdata(case, post_case_dir):
     """
-    Gera e salva as três variáveis de entrada (SDF1, flow_region e SDF2).
+    Gera e salva as três variáveis de entrada (SDF1, flow_region e SDF2) no formato adequado para a rede neural.
     """
+    # Criar o diretório "data" se ele não existir antes de salvar os arquivos
+    data_dir = os.path.join(post_case_dir, "data")
+    figures_dir = os.path.join(data_dir, "figures")
+    os.makedirs(data_dir, exist_ok=True)  # 🔹 GARANTIR QUE O DIRETÓRIO EXISTA
+
     # 1) Definir caminhos relevantes
     vtu_file = os.path.join(case, "VTK", f"{os.path.basename(case)}_500", "internal.vtu")
     obstacle_file = os.path.join(case, "VTK", f"{os.path.basename(case)}_500", "boundary", "wall.vtp")
 
-    # Diretórios corretos para salvar os arquivos
-    data_dir = os.path.join(post_case_dir, "data")
-    figures_dir = os.path.join(data_dir, "figures")
-
-    os.makedirs(data_dir, exist_ok=True)
-    os.makedirs(figures_dir, exist_ok=True)
-
-    # 2) Gerar SDF1
+    # 2) Gerar SDF1, Flow Region e SDF2
     sdf1 = generate_sdf1(vtu_file, obstacle_file)
-    save_sdf1_image(sdf1, figures_dir)
-
-    # 3) Gerar flow_region
     flow_region = generate_flow_region(vtu_file, obstacle_file)
-    save_flow_region_image(flow_region, figures_dir)
-
-    # 4) Gerar SDF2
     sdf2 = generate_sdf2(vtu_file)
+
+    # 3) Reformatar para o formato (1, 3, 172, 79)
+    X_data = np.stack([sdf1, flow_region, sdf2], axis=0)  # Forma (3, 172, 79)
+    X_data = np.expand_dims(X_data, axis=0)  # Forma final (1, 3, 172, 79)
+
+    # 4) Salvar em dataX.npy
+    output_file = os.path.join(data_dir, "dataX.npy")
+    np.save(output_file, X_data)
+
+    # Salvar imagens
+    save_sdf1_image(sdf1, figures_dir)
+    save_flow_region_image(flow_region, figures_dir)
     save_sdf2_image(sdf2, figures_dir)
 
-    # 5) Salvar os dados no arquivo .npy
-    output_file = os.path.join(data_dir, "dataX.npy")
-    np.save(output_file, {"sdf1": sdf1, "flow_region": flow_region, "sdf2": sdf2})
+    print(f"✅ Arquivo dataX.npy salvo em: {output_file} com formato {X_data.shape}")
 
-    print(f"✅ Arquivo dataX.npy salvo em: {output_file}")
-    print(f"✅ Imagens salvas em: {figures_dir}")
+
+def save_overall_data(cases):
+    """
+    Lê os arquivos dataX.npy e dataY.npy de cada pasta de caso,
+    empilha (concatena) ao longo da dimensão 0,
+    e salva dataX.pkl e dataY.pkl no diretório postprocesses/processed_data com dimensões (N, 3, 172, 79).
+    """
+    dataX_list = []
+    dataY_list = []
+
+    for case in cases:
+        # post_case_dir corresponde a postprocesses/<nome_da_pasta>
+        post_case_dir = os.path.join("postprocesses", os.path.basename(case))
+        data_dir = os.path.join(post_case_dir, "data")
+
+        # Arquivos gerados anteriormente
+        fileX = os.path.join(data_dir, "dataX.npy")
+        fileY = os.path.join(data_dir, "dataY.npy")
+
+        # Ler cada arquivo .npy
+        if os.path.exists(fileX):
+            x_data = np.load(fileX)  # (1,3,172,79)
+            dataX_list.append(x_data)
+        
+        if os.path.exists(fileY):
+            y_data = np.load(fileY)  # (1,3,172,79)
+            dataY_list.append(y_data)
+
+    # Concatenar ao longo de axis=0
+    # Se tivermos N pastas, resultará em (N,3,172,79)
+    if dataX_list:
+        dataX_all = np.concatenate(dataX_list, axis=0)
+    else:
+        dataX_all = None
+
+    if dataY_list:
+        dataY_all = np.concatenate(dataY_list, axis=0)
+    else:
+        dataY_all = None
+
+    # Criar a pasta postprocesses/processed_data/ caso não exista
+    processed_data_dir = os.path.join("postprocesses", "processed_data")
+    os.makedirs(processed_data_dir, exist_ok=True)  # 🔹 GARANTIR QUE A PASTA EXISTA
+
+    # Salvar em arquivos .pkl (poderia ser .npy se preferir)
+    if dataX_all is not None:
+        with open(os.path.join(processed_data_dir, "dataX.pkl"), "wb") as f:
+            pickle.dump(dataX_all, f)
+        print(f"✅ Arquivo dataX.pkl salvo em: {os.path.join(processed_data_dir, 'dataX.pkl')} com dimensão {dataX_all.shape}")
+
+    if dataY_all is not None:
+        with open(os.path.join(processed_data_dir, "dataY.pkl"), "wb") as f:
+            pickle.dump(dataY_all, f)
+        print(f"✅ Arquivo dataY.pkl salvo em: {os.path.join(processed_data_dir, 'dataY.pkl')} com dimensão {dataY_all.shape}")
+
 
 
 def postprocessing_control():
@@ -124,6 +217,11 @@ def postprocessing_control():
     cases = list_cases(cases_dir, max_cases=2)
     print(f"🔍 Casos listados: {cases}")
 
+    # Step 1.1: Rodar foamToVTK se necessário
+    for case in cases:
+        print(f"🔄 Verificando e rodando foamToVTK para o caso: {case}")
+        run_foamToVTK(case)  # Executa foamToVTK para cada caso
+
     # Step 2: Process each case
     for case in cases:
         print(f"⚙ Preparando diretórios e processando o caso: {case}")
@@ -131,14 +229,15 @@ def postprocessing_control():
         # Step 2.1: Prepare directory and symbolic link for VTK
         post_case_dir = prepare_case_directory(case)
 
-
         # Step 2.2: Save Y-data
         save_Ydata(case, post_case_dir)
 
         # Step 2.3: Save X-data
         save_Xdata(case, post_case_dir)
-        
-        # Step 2.4: Save overall data
+
+    # Step 2.4: Save overall data (N, 3, 172, 79)
+    save_overall_data(cases)
+
 
 
 

@@ -24,21 +24,24 @@ def generate_sdf2(vtu_file, grid_width=172, grid_height=79):
             dist_bottom = abs(grid_y[i, j] - bottom_wall)
             sdf2[i, j] = min(dist_top, dist_bottom)
 
-    return sdf2
+    return np.array(sdf2)
 
 def save_sdf2_image(sdf2, figures_dir):
     """
     Salva a imagem da SDF2 em data/figures/.
     """
-    os.makedirs(figures_dir, exist_ok=True)
+    os.makedirs(figures_dir, exist_ok=True)  # 🔹 GARANTIR QUE A PASTA EXISTA
+
     plt.figure(figsize=(8, 6))
     plt.imshow(sdf2, cmap='jet', origin='lower')
     plt.colorbar(label='Signed Distance Function (SDF2)')
     plt.title('SDF2 (Paredes Sup/Inf)')
     plt.xlabel('X')
     plt.ylabel('Y')
+
     plot_filename = os.path.join(figures_dir, 'sdf2_visualization.png')
     plt.savefig(plot_filename, dpi=300)
     plt.close()
+    
     print(f"✅ Imagem SDF2 salva em: {plot_filename}")
 

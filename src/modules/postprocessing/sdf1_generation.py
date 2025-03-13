@@ -48,20 +48,23 @@ def generate_sdf1(vtu_file, obstacle_file, grid_width=172, grid_height=79):
             else:
                 sdf1[i, j] = dist
 
-    return sdf1
+    return np.array(sdf1)
 
 def save_sdf1_image(sdf1, figures_dir):
     """
     Salva a imagem da SDF1 em data/figures/.
     """
-    os.makedirs(figures_dir, exist_ok=True)
+    os.makedirs(figures_dir, exist_ok=True)  # 🔹 GARANTIR QUE A PASTA EXISTA
+
     plt.figure(figsize=(8, 6))
     plt.imshow(sdf1, cmap='jet', origin='lower')
     plt.colorbar(label='Signed Distance Function (SDF1)')
     plt.title('SDF1 (Obstáculo)')
     plt.xlabel('X')
     plt.ylabel('Y')
+
     plot_filename = os.path.join(figures_dir, 'sdf1_visualization.png')
     plt.savefig(plot_filename, dpi=300)
     plt.close()
+    
     print(f"✅ Imagem SDF1 salva em: {plot_filename}")
