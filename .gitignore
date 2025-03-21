@@ -1,35 +1,5 @@
-# Ignore all generated STL files
-cases/geometries/
-
-# Ignore all generated OpenFOAM cases
-cases/cases_run/
-
-# Ignore logs and temporary files
-logs/
-*.log
-*.tmp
-*.swp
-
-# Ignore Python cache and compiled files
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Ignore OpenFOAM auto-generated files
-cases/cases_run/*/processor*/  
-cases/cases_run/*/log.*
-cases/cases_run/*/postProcessing/
-cases/cases_run/*/*.foam
-
-# Allow only the OpenFOAM template folder
-!cases/template/
-!cases/template/**
-
-
-# Ignore Python package metadata
-*.egg-info/
-doc/
-
-# other files
-*.png
+case-example/*
+template*/*
+**/_pycache_/*
+**/__pycache__/*
+**/*.pyc
