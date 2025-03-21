@@ -4,7 +4,7 @@ import re
 import shutil
 import numpy as np
 import subprocess
-from postprocess.config import SYSTEM_PATH, SAMPLE_FILE_PATH, X_MIN, X_MAX, NX, Y_MIN, Y_MAX, NY, BASE_PATH
+from postprocess.config import SYSTEM_PATH, SAMPLE_FILE_PATH, X_MIN,NX, X_MAX, DX, NY, Y_MIN, Y_MAX, DY, BASE_PATH
 
 POSTPROCESS_DIR = os.path.join(BASE_PATH, "postProcessing")
 
@@ -12,9 +12,9 @@ def generate_sample():
     """Gera o arquivo sample dentro do diretório system/ para OpenFOAM."""
     print("\n📄 Criando arquivo sample para OpenFOAM...\n")
 
-    # Criando os pontos centrais das células em X
-    x_values = np.linspace(X_MIN, X_MAX, NX + 1)
-    x_centers = np.round((x_values[:-1] + x_values[1:]) / 2, 3)
+    # Criando os pontos centrais das células em X usando DX
+    x_centers = np.array([X_MIN + ((2 * i + 1) / 2) * DX for i in range(NX)])
+
 
     # Cabeçalho do arquivo sample
     sample_dict = """/*--------------------------------*- C++ -*----------------------------------*\\
@@ -43,13 +43,14 @@ sets
     # Criando os blocos ao longo de X
     block_lines = []
     for x in x_centers:
-        block_name = f"xp{int(x*100):03d}" if x >= 0 else f"xn{-int(x*100):03d}"
+        block_name = f"xp{int(abs(x) * 1e3):04d}" if x >= 0 else f"xn{int(abs(x) * 1e3):04d}"
+
         block_lines.append(f"""    {block_name}
     {{
         type        uniform;
         axis        y;
-        start       ({x} {Y_MIN} 0);
-        end         ({x} {Y_MAX} 0);
+        start       ({x} {Y_MIN+DY/2} 0);
+        end         ({x} {Y_MAX-DY/2} 0);
         nPoints     {NY};
     }}\n""")
 
