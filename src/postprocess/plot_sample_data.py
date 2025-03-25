@@ -1,63 +1,93 @@
 import os
+import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-import pandas as pd
-from postprocess.config import DX, DY, POSTPROCESS_PATH
+from postprocess.config import CLOUD_PATH, PLOT_PATH, DX, DY, X_MIN, X_MAX, Y_MIN, Y_MAX  # Importando configurações
 
-# Caminho dos arquivos de saída
-output_dir = os.path.join(POSTPROCESS_PATH, "figures")
-os.makedirs(output_dir, exist_ok=True)
-
-# Carregar os dados do DataFrame consolidado
-df_path = os.path.join(POSTPROCESS_PATH, "sample_data.csv")
-if not os.path.exists(df_path):
-    raise FileNotFoundError(f"❌ ERRO: Arquivo {df_path} não encontrado!")
-
-df = pd.read_csv(df_path)
-
-def plot_field(df, field, title, filename, cmap="coolwarm"):
-    """
-    Plota e salva um mapa de calor para um campo específico (Ux, Uy, ou p).
+def load_cloud_data():
+    """Carrega o arquivo de dados mais recente de cloud e retorna um DataFrame."""
     
-    Parâmetros:
-        df (pd.DataFrame): DataFrame com os dados.
-        field (str): Nome da coluna a ser plotada ('Ux', 'Uy' ou 'p').
-        title (str): Título do gráfico.
-        filename (str): Nome do arquivo de saída.
-        cmap (str): Colormap do matplotlib.
-    """
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.set_title(title)
-    ax.set_xlabel("Posição X")
-    ax.set_ylabel("Posição Y")
+    # Identificar o latestTime
+    cloud_dir = os.path.join(CLOUD_PATH)
+    latest_time = max([float(d) for d in os.listdir(cloud_dir) if d.replace(".", "").isdigit()])
+    latest_time_dir = os.path.join(cloud_dir, str(int(latest_time)))
 
-    # Criar retângulos para cada ponto do DataFrame
-    for _, row in df.iterrows():
-        rect = patches.Rectangle(
-            (row["x"], row["y"]),  # Posição do canto inferior esquerdo
-            DX, DY,  # Tamanho do retângulo
-            facecolor=plt.cm.get_cmap(cmap)(row[field]),  # Cor proporcional ao valor do campo
-            edgecolor="none"
-        )
-        ax.add_patch(rect)
+    file_path = os.path.join(latest_time_dir, "ref_point_p_U.xy")
 
-    # Ajustar limites do gráfico
-    ax.set_xlim(df["x"].min(), df["x"].max())
-    ax.set_ylim(df["y"].min(), df["y"].max())
+    if not os.path.exists(file_path):
+        print(f"❌ ERRO: Arquivo {file_path} não encontrado!")
+        return None
 
-    # Salvar a figura no diretório de saída
-    save_path = os.path.join(output_dir, filename)
-    plt.savefig(save_path, dpi=300)
-    plt.close(fig)
+    # Carregar os dados
+    try:
+        data = np.loadtxt(file_path)
+        df = pd.DataFrame({
+            "x": data[:, 0],
+            "y": data[:, 1],
+            "p": data[:, 3],
+            "Ux": data[:, 4],
+            "Uy": data[:, 5]
+        })
 
-    print(f"✅ Imagem salva: {save_path}")
+        return df
+
+    except Exception as e:
+        print(f"❌ ERRO ao processar o arquivo {file_path}: {e}")
+        return None
+
+def plot_fields(df):
+    """Gera os plots dos campos Ux, Uy e p desenhando retângulos de tamanho DX x DY."""
+
+    # Criar figure e subplots
+    # Definir a proporção baseada na extensão dos eixos X e Y
+    fig_width = 10  # Largura base da figura (ajustável)
+    aspect_ratio = (Y_MAX - Y_MIN) / (X_MAX - X_MIN)
+    fig_height = fig_width * aspect_ratio  # Ajustar altura proporcionalmente
+
+    # Criar figure e subplots com tamanho ajustado
+    fig, axes = plt.subplots(3, 1, figsize=(fig_width, fig_height*2.6 ), constrained_layout=True)
+
+
+    fields = ["Ux", "Uy", "p"]
+    titles = ["Velocidade Ux", "Velocidade Uy", "Pressão (p)"]
+    cmap = "jet"  # Usar cmap jet para melhor visualização
+
+    for ax, field, title in zip(axes, fields, titles):
+        norm = plt.Normalize(df[field].min(), df[field].max())  # Normalização das cores
+        cmap_instance = plt.get_cmap(cmap)
+
+        for _, row in df.iterrows():
+            color = cmap_instance(norm(row[field]))  # Cor baseada no valor do campo
+            rect = patches.Rectangle(
+                (row["x"] - DX / 2, row["y"] - DY / 2),  # Canto inferior esquerdo do retângulo
+                DX, DY,  # Largura e altura
+                linewidth=0,
+                edgecolor=None,
+                facecolor=color
+            )
+            ax.add_patch(rect)
+
+        ax.set_xlim(df["x"].min() - DX, df["x"].max() + DX)
+        ax.set_ylim(df["y"].min() - DY, df["y"].max() + DY)
+        ax.set_title(title)
+        ax.set_xlabel("Posição X")
+        ax.set_ylabel("Posição Y")
+
+        # Adiciona barra de cores
+        sm = plt.cm.ScalarMappable(cmap=cmap_instance, norm=norm)
+        sm.set_array([])
+        fig.colorbar(sm, ax=ax, label=title)
+
+    # Salvar a figura
+    os.makedirs(PLOT_PATH, exist_ok=True)
+    output_file = os.path.join(PLOT_PATH, "cloud_fields_rectangles.png")
+    plt.savefig(output_file, dpi=300)
+    print(f"✅ Plot salvo em {output_file}")
 
 if __name__ == "__main__":
-    print("\n🔍 [DEBUG] Iniciando criação dos mapas de calor...\n")
+    print("\n🔍 [DEBUG] Iniciando criação do plot a partir dos arquivos cloud...\n")
+    df = load_cloud_data()
 
-    # Criar os três mapas de calor e salvar como PNG
-    plot_field(df, "Ux", "Campo de Velocidade Ux", "Ux_field.png")
-    plot_field(df, "Uy", "Campo de Velocidade Uy", "Uy_field.png")
-    plot_field(df, "p", "Campo de Pressão", "Pressure_field.png")
-
-    print("✅ Todas as imagens foram geradas e salvas com sucesso!")
+    if df is not None:
+        plot_fields(df)
