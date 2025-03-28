@@ -1,31 +1,32 @@
 import os
 
-# Diretório base do case OpenFOAM
-BASE_PATH = "template-lam"
+# Diretório base do projeto
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Diretório onde está config.py
+PROJECT_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", ".."))  # Diretório raiz do projeto
 
-# Caminhos do sistema
-SYSTEM_PATH = os.path.join(BASE_PATH, "system")  # Onde será salvo o arquivo sample
-POSTPROCESS_PATH = os.path.join(BASE_PATH, "postProcessing")  # Onde OpenFOAM salvará os arquivos .xy
-OUTPUT_NPY_PATH = os.path.join(BASE_PATH, "postProcessing/Ux_field.npy")  # Arquivo final de saída
-CLOUD_PATH = os.path.join(POSTPROCESS_PATH, "cloud")  # Definir corretamente o caminho
-PLOT_PATH = os.path.join(POSTPROCESS_PATH, "plots")  
+# Diretórios principais
+TEMPLATE_DIR = os.path.join(PROJECT_DIR, "template-lam")  # Template da simulação
+OUTPUT_DIR = os.path.join(PROJECT_DIR, "output")  # Diretório de saída
+POSTPROCESS_DIR = os.path.join(OUTPUT_DIR, "postProcessing")  # Diretório de pós-processamento
 
+# Diretórios específicos
+SYSTEM_PATH = os.path.join(TEMPLATE_DIR, "system")  # Diretório do sistema
+CLOUD_PATH = os.path.join(POSTPROCESS_DIR, "cloud")  # Caminho correto para postProcessing/cloud
+
+# Lista de velocidades para simulação
+VELOCITIES = [0.1, 0.3, 0.5, 0.8, 1.0, 1.3, 1.6, 1.9, 2.2, 2.5, 2.8, 3.0]
+
+# Nome do arquivo de velocidade dentro da pasta de cada caso
+U_FILE_NAME = "0/U"
+
+# Nome do log da simulação
+LOG_FILE_NAME = "log.simpleFoam"
 
 # Definição da malha para amostragem
 NPOINTS = 100
-X_MIN, X_MAX, NX = -1, 3, NPOINTS  # Faixa e número de pontos no eixo X
-Y_MIN, Y_MAX, NY = -1.5, 1.5, NPOINTS  # Faixa e número de pontos no eixo Y
-
-DX = (X_MAX - X_MIN) / NX
-DY = (Y_MAX - Y_MIN) / NY
+X_MIN, X_MAX, DX = -1, 3, (3 - (-1)) / NPOINTS
+Y_MIN, Y_MAX, DY = -1.5, 1.5, (1.5 - (-1.5)) / NPOINTS
 
 
-
-# 🔹 Caminho do arquivo `sample`
-SAMPLE_FILE_PATH = os.path.join(SYSTEM_PATH, "sample")
-
-# 🔹 Nome do arquivo de entrada gerado pelo OpenFOAM
-CLOUD_FILE_NAME = "ref_point_p_U.xy"  # Nome do arquivo exato esperado
-
-# 🔹 Nome do arquivo de saída HDF5 (será salvo dentro da pasta correta)
+# Nome do arquivo de saída HDF5 (salvo dentro de cada case_dir)
 HDF5_FILE_NAME = "data.h5"

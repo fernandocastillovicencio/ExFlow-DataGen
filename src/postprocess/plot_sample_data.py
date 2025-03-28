@@ -3,15 +3,25 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from postprocess.config import CLOUD_PATH, PLOT_PATH, DX, DY, X_MIN, X_MAX, Y_MIN, Y_MAX  # Importando configurações
+from postprocess.config import DX, DY, X_MIN, X_MAX, Y_MIN, Y_MAX
 
-def load_cloud_data():
-    """Carrega o arquivo de dados mais recente de cloud e retorna um DataFrame."""
+def load_cloud_data(case_dir):
+    """Carrega o arquivo de dados mais recente de cloud dentro de um caso específico e retorna um DataFrame."""
     
-    # Identificar o latestTime
-    cloud_dir = os.path.join(CLOUD_PATH)
-    latest_time = max([float(d) for d in os.listdir(cloud_dir) if d.replace(".", "").isdigit()])
-    latest_time_dir = os.path.join(cloud_dir, str(int(latest_time)))
+    cloud_path = os.path.join(case_dir, "postProcessing", "cloud")
+
+    if not os.path.exists(cloud_path):
+        print(f"❌ ERRO: Diretório {cloud_path} não encontrado!")
+        return None
+
+    # Encontrar o último tempo salvo
+    time_dirs = [d for d in os.listdir(cloud_path) if d.isdigit()]
+    if not time_dirs:
+        print(f"❌ ERRO: Nenhuma pasta de tempo encontrada em {cloud_path}")
+        return None
+
+    latest_time = max(map(int, time_dirs))
+    latest_time_dir = os.path.join(cloud_path, str(latest_time))
 
     file_path = os.path.join(latest_time_dir, "ref_point_p_U.xy")
 
@@ -36,32 +46,38 @@ def load_cloud_data():
         print(f"❌ ERRO ao processar o arquivo {file_path}: {e}")
         return None
 
-def plot_fields(df):
-    """Gera os plots dos campos Ux, Uy e p desenhando retângulos de tamanho DX x DY."""
+def plot_fields(case_dir):
+    """Gera e salva os plots dos campos Ux, Uy e p dentro do diretório do caso."""
 
-    # Criar figure e subplots
-    # Definir a proporção baseada na extensão dos eixos X e Y
-    fig_width = 10  # Largura base da figura (ajustável)
+    df = load_cloud_data(case_dir)
+    if df is None:
+        return
+
+    # Criar diretório para salvar os plots dentro do caso específico
+    plot_path = os.path.join(case_dir, "plots")
+    os.makedirs(plot_path, exist_ok=True)
+
+    # Definir dimensões da figura
+    fig_width = 10  
     aspect_ratio = (Y_MAX - Y_MIN) / (X_MAX - X_MIN)
-    fig_height = fig_width * aspect_ratio  # Ajustar altura proporcionalmente
+    fig_height = fig_width * aspect_ratio  
 
-    # Criar figure e subplots com tamanho ajustado
-    fig, axes = plt.subplots(3, 1, figsize=(fig_width, fig_height*2.6 ), constrained_layout=True)
-
+    # Criar figura e subplots ajustados
+    fig, axes = plt.subplots(3, 1, figsize=(fig_width, fig_height*2.6), constrained_layout=True)
 
     fields = ["Ux", "Uy", "p"]
     titles = ["Velocidade Ux", "Velocidade Uy", "Pressão (p)"]
-    cmap = "jet"  # Usar cmap jet para melhor visualização
+    cmap = "jet"
 
     for ax, field, title in zip(axes, fields, titles):
-        norm = plt.Normalize(df[field].min(), df[field].max())  # Normalização das cores
+        norm = plt.Normalize(df[field].min(), df[field].max())
         cmap_instance = plt.get_cmap(cmap)
 
         for _, row in df.iterrows():
-            color = cmap_instance(norm(row[field]))  # Cor baseada no valor do campo
+            color = cmap_instance(norm(row[field]))
             rect = patches.Rectangle(
-                (row["x"] - DX / 2, row["y"] - DY / 2),  # Canto inferior esquerdo do retângulo
-                DX, DY,  # Largura e altura
+                (row["x"] - DX / 2, row["y"] - DY / 2),
+                DX, DY,
                 linewidth=0,
                 edgecolor=None,
                 facecolor=color
@@ -79,15 +95,11 @@ def plot_fields(df):
         sm.set_array([])
         fig.colorbar(sm, ax=ax, label=title)
 
-    # Salvar a figura
-    os.makedirs(PLOT_PATH, exist_ok=True)
-    output_file = os.path.join(PLOT_PATH, "cloud_fields_rectangles.png")
+    # Salvar a figura no diretório do caso
+    output_file = os.path.join(plot_path, "cloud_fields_rectangles.png")
     plt.savefig(output_file, dpi=300)
     print(f"✅ Plot salvo em {output_file}")
 
-if __name__ == "__main__":
-    print("\n🔍 [DEBUG] Iniciando criação do plot a partir dos arquivos cloud...\n")
-    df = load_cloud_data()
-
-    if df is not None:
-        plot_fields(df)
+def main(case_dir):
+    """Executa a geração de gráficos de amostragem para um caso específico."""
+    plot_fields(case_dir)

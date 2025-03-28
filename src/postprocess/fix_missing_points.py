@@ -1,32 +1,34 @@
 import os
 import numpy as np
-from postprocess.config import CLOUD_PATH, X_MIN, X_MAX, Y_MIN, Y_MAX, DX, DY, NPOINTS  # Importando configurações
+from postprocess.config import X_MIN, X_MAX, DX, Y_MIN, Y_MAX, DY, NPOINTS
 
-def get_latest_time():
-    """Identifica o maior número de tempo dentro da pasta postProcessing/cloud/."""
-    if not os.path.exists(CLOUD_PATH):
-        print(f"❌ ERRO: Diretório {CLOUD_PATH} não encontrado!")
+def get_latest_time(case_dir):
+    """Identifica o maior número de tempo dentro da pasta postProcessing/cloud/ de um caso específico."""
+    cloud_path = os.path.join(case_dir, "postProcessing", "cloud")
+    
+    if not os.path.exists(cloud_path):
+        print(f"❌ ERRO: Diretório {cloud_path} não encontrado!")
         return None
 
-    time_dirs = [d for d in os.listdir(CLOUD_PATH) if d.isdigit()]
+    time_dirs = [d for d in os.listdir(cloud_path) if d.isdigit()]
     if not time_dirs:
-        print("❌ ERRO: Nenhuma pasta de tempo encontrada em postProcessing/cloud/")
+        print(f"❌ ERRO: Nenhuma pasta de tempo encontrada em {cloud_path}")
         return None
 
     latest_time = max(map(int, time_dirs))  # Encontrar o maior número de tempo
-    latest_path = os.path.join(CLOUD_PATH, str(latest_time))
+    latest_path = os.path.join(cloud_path, str(latest_time))
 
     return latest_path
 
-def fix_missing_cloud_points():
-    """Verifica e corrige pontos ausentes no arquivo de amostragem cloud."""
-    latest_path = get_latest_time()
+def fix_missing_cloud_points(case_dir):
+    """Verifica e corrige pontos ausentes no arquivo de amostragem cloud dentro de um caso específico."""
+    latest_path = get_latest_time(case_dir)
     if latest_path is None:
         return
 
     file_path = os.path.join(latest_path, "ref_point_p_U.xy")  # Nome fixo do arquivo
     if not os.path.exists(file_path):
-        print(f"❌ ERRO: Arquivo {file_path} não encontrado!")
+        print(f"❌ ERRO: Arquivo {file_path} não encontrado em {latest_path}!")
         return
 
     print(f"📂 [DEBUG] Processando arquivo: {file_path}")
@@ -37,7 +39,7 @@ def fix_missing_cloud_points():
     if data.ndim == 1:
         data = data.reshape(1, -1)  # Garantir formato 2D
 
-    # Extração das colunas x, y, z, p, Ux, Uy, Uz
+    # Extração das colunas x, y
     x_values = np.round(data[:, 0], 6)
     y_values = np.round(data[:, 1], 6)
 
@@ -70,6 +72,6 @@ def fix_missing_cloud_points():
     else:
         print("✅ [DEBUG] Nenhum ponto ausente encontrado. Nenhuma modificação necessária.")
 
-if __name__ == "__main__":
-    print("\n🔍 [DEBUG] Iniciando verificação e correção dos pontos de amostragem cloud...\n")
-    fix_missing_cloud_points()
+def main(case_dir):
+    """Executa a verificação e correção dos pontos ausentes para um caso específico."""
+    fix_missing_cloud_points(case_dir)
